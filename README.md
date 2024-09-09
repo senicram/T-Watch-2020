@@ -32,7 +32,7 @@
 * Supported devices:
  * lilyGo TWatch 2020 series v1
  * lilyGo TWatch 2020 series v2
- * lilyGo TWatch 2020 series v3 (both battery and UART/TTL) 380mAh and 500mAh (planned 400mAh version)
+ * lilyGo TWatch 2020 series v3 (both battery and UART/TTL) 380mAh and 500mAh (planned 400mAh & 470mAh version)
 
 
 
