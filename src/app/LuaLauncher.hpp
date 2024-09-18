@@ -22,7 +22,7 @@
 
 //#include "../system/Application.hpp"
 #include "../UI/AppLuITemplate.hpp"
-#include "LuiDialog.hpp"
+#include "LuIDialog.hpp"
 extern const char * HelloworldLuaScript;
 
 class LuaLauncher : public TemplateLuIApplication {
