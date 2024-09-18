@@ -18,7 +18,7 @@
 //
 
 #include "../UI/AppLuITemplate.hpp"
-#include "LuiDialog.hpp"
+#include "LuIDialog.hpp"
 #include "../UI/controls/XBM.hpp"
 #include "../resources.hpp"
 
