@@ -26,6 +26,16 @@ using namespace LuI;
 const char * HelloworldLuaScript =
 "\
 log('Hello world from Lua script!')\n\
+log('globals:')\n\
+for n in pairs(_G) do log(n) end\n\
+--[[\n\
+canDo = Allow(\"net\")\n\
+if canDo then\n\
+    log('USER CONSENT')\n\
+else\n\
+    log('USER DENIES')\n\
+end\n\
+]]--\n\
 Debug()\n\
 log('Fill screen with color')\n\
 for i=1,3 do\n\
@@ -39,7 +49,7 @@ for i=1,100 do\n\
     local color = random(0,0xffff)\n\
     local x0 = random(0,240)\n\
     local y0 = random(0,240)\n\
-    local tsize = random(1,8)\n\
+    local tsize = random(1,6)\n\
     SetTextColor(color)\n\
     SetTextSize(tsize)\n\
     DrawText(x0,y0,\"hello world!\")\n\
@@ -99,9 +109,27 @@ log('Little delay...')\n\
 -- delay(1000)\n\
 Debug()\n\
 log('See you!')\n\
-LaunchWatchface()\n\
+-- LaunchWatchface()\n\
 ";
 
 LuaLauncher::LuaLauncher(const char * script) {
-    LuaRun(script);
+    LuaRun(script,[](const char* response, void *payload) {
+        lLog("[LUA] Script end\n");
+        LuaLauncher * self = (LuaLauncher *)payload;
+        if ( nullptr != self->myDialog ) {
+            delete self->myDialog;
+            self->myDialog=nullptr;
+        }
+        LaunchWatchface();
+    }, this);
 }
+/*
+bool LuaLauncher::Tick() {
+    if ( nullptr == myDialog ) {
+        bool res = TemplateLuIApplication::Tick();
+        return res;
+    }
+    myDialog->Tick();
+    return false;
+}
+*/

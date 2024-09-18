@@ -24,8 +24,30 @@
 #include "../app/Shutdown.hpp"
 #include <LilyGoWatch.h>
 #include "Application.hpp"
+#include "../app/LuaLauncher.hpp"
 
-LuaWrapper lua;
+const char* LuaPermissions[] = {
+    "net",
+    "disk",
+    "setting",
+    "energy",
+    "alarm",
+    "ble"
+};
+
+class MyOwnLuaWrapper: public LuaWrapper {
+  public:
+    bool netAllow = false;
+    bool diskAllow = false;
+    bool settingsAllow = false;
+    bool energyAllow = false;
+    bool alarmAllow = false;
+    bool bleAllow = false;
+    //lua_State *state;
+    MyOwnLuaWrapper() { LuaWrapper(); /*state = LuaWrapper::_state;*/ }
+};
+
+MyOwnLuaWrapper lua;
 static uint32_t RunningLuaScripts=0;
 
 typedef struct {
@@ -34,6 +56,7 @@ typedef struct {
     void * payload;
     String * program;
 } LuaCallbackData;
+
 
 extern "C" {
     // get mandatory: uint16_t color = luaL_checkinteger(lua_state, 1);
@@ -47,8 +70,8 @@ extern "C" {
 
 
     static int lua_wrapper_Debug(lua_State *lua_state) {
-        lRawLog("[LUA] Free System Heap: %d\n",esp_get_free_heap_size());
-        lRawLog("[LUA] Free Task Heap:   %d\n",uxTaskGetStackHighWaterMark(NULL));
+        lLog("[LUA] Free System Heap: %d\n",esp_get_free_heap_size());
+        lLog("[LUA] Free Task Heap:   %d\n",uxTaskGetStackHighWaterMark(NULL));
         return 0;
     }
     static int lua_wrapper_Restart(lua_State *lua_state) {
@@ -138,7 +161,7 @@ extern "C" {
         xSemaphoreGive( UISemaphore );
         return 0;
     }
-    
+
     static int lua_wrapper_tft_drawText(lua_State *lua_state) {
         int32_t x0 = luaL_checkinteger(lua_state, 1);
         int32_t y0 = luaL_checkinteger(lua_state, 2);
@@ -146,16 +169,57 @@ extern "C" {
         xSemaphoreTake( UISemaphore, LUNOKIOT_EVENT_MANDATORY_TIME_TICKS);
         //LunokIoTApplication * current = currentApplication;
         if ( nullptr != currentApplication ) {
-            /* @TODO
+
+
+            // @TODO setFreeFont and setTextDatum must be exposed to lua
             currentApplication->canvas->setFreeFont(&FreeMonoBold9pt7b);
             currentApplication->canvas->setTextDatum(BC_DATUM);
-            */
+
+
             currentApplication->canvas->drawString(what,x0,y0);
             currentApplication->dirty=true;
         }
         UINextTimeout = millis()+UITimeout; // disable screen timeout
         xSemaphoreGive( UISemaphore );
         return 0;
+    }
+
+    static int lua_wrapper_Allow(lua_State *lua_state) {
+        const char * what = luaL_checkstring(lua_state, 1);
+        size_t numElements = sizeof(LuaPermissions) / sizeof(LuaPermissions[0]);
+        for(size_t c=0;c<numElements;c++) {
+            if ( 0 == strcmp(LuaPermissions[c],what) ) {
+                lLog("\n\nWARNING!!! @TODO USER CONSENT APP MUST BE LAUNCHED HERE\n\n\n");
+                //lua.netAllow = true;
+                //lua_pushboolean(lua_state,lua.netAllow);
+                //return 1;
+                LuaLauncher * currScript = (LuaLauncher *)currentApplication;
+                if ( nullptr == currScript->myDialog ) {
+                    xSemaphoreTake(UISemaphore, LUNOKIOT_EVENT_DONTCARE_TIME_TICKS);
+                    currScript->myDialog = new LuIDialogApplication();
+                    currScript->myDialog->dialogContents->SetText("Allow network?");
+                    currScript->myDialog->yesButton->tapCallbackParam = xTaskGetCurrentTaskHandle();
+                    currScript->myDialog->yesButton->tapCallback = [](void *payload){ 
+                        TaskHandle_t mtask = (TaskHandle_t)payload;
+                        vTaskResume(mtask);
+                    };
+                    currScript->myDialog->noButton->tapCallbackParam = currScript->myDialog->yesButton->tapCallbackParam;
+                    currScript->myDialog->noButton->tapCallback = [](void *payload){ 
+                        TaskHandle_t mtask = (TaskHandle_t)payload;
+                        vTaskResume(mtask);
+                    };
+                    currScript->myDialog->screen->dirty=true;
+                    xSemaphoreGive(UISemaphore);
+                    vTaskSuspend(NULL); // wait until user responds...
+                    xSemaphoreTake(UISemaphore, LUNOKIOT_EVENT_DONTCARE_TIME_TICKS);
+                    delete currScript->myDialog;
+                    currScript->myDialog=nullptr;
+                    xSemaphoreGive(UISemaphore);
+                }
+            }
+        }
+        lua_pushboolean(lua_state,false);
+        return 1;
     }
 
     static int lua_wrapper_tft_drawRect(lua_State *lua_state) {
@@ -209,7 +273,6 @@ extern "C" {
         return 1;
     }
 
-
     static int lua_wrapper_lwatch_print(lua_State *L) {
         // manual blocking of log to print in block
         xSemaphoreTake( lLogAsBlockSemaphore, LUNOKIOT_EVENT_MANDATORY_TIME_TICKS);
@@ -243,7 +306,14 @@ void LuaEndDefaultCallback(const char* response, void *payload) {
     lLog("LUA (%u) End callback: no action\n",RunningLuaScripts);
 };
 
+int LuaPanicHandler (lua_State *L) {
+    lLog("[LUA] PANIC!!!\n");
+    lua_wrapper_Debug(L);
+    return 0;
+}
+
 void LuaInit() {
+    //@TODO lua_atpanic(lua.state,&LuaPanicHandler);
     // log and stdout functions
     lua.Lua_register("print", &lua_wrapper_lwatch_print);
     lua.Lua_register("log", &lua_wrapper_lwatch_print);
@@ -253,6 +323,8 @@ void LuaInit() {
     lua.Lua_register("delay", &lua_wrapper_delay);
     lua.Lua_register("random", &lua_wrapper_random);
 
+    // system check calls
+    lua.Lua_register("Allow", &lua_wrapper_Allow);
     // system (lwatch) calls
     lua.Lua_register("LaunchWatchface", &lua_wrapper_LaunchWatchface);
     lua.Lua_register("ScreenSleep", &lua_wrapper_ScreenSleep);
@@ -270,6 +342,8 @@ void LuaInit() {
     lua.Lua_register("SetTextSize", &lua_wrapper_tft_setTextSize);
     lua.Lua_register("DrawText", &lua_wrapper_tft_drawText);
     lua.Lua_register("RGBTft", &lua_wrapper_tft_rgbTFTColor);
+    // @TODO haptic calls
+    // @TODO sensors calls
     // @TODO UI calls
     // @TODO GUI calls
 
