@@ -311,11 +311,13 @@ LunokIoT::LunokIoT() {
     //ULPRun();
 
 
+    SplashAnnounce("    System    ");
+    lSysLog("System initializing...\n");
+    
     #ifdef LILYGO_WATCH_2020_V3
     ttgo->motor_begin(); // start the motor for haptic notifications
     #endif
-    SplashAnnounce("    System    ");
-    lSysLog("System initializing...\n");
+
     SplashAnnounce("  System (RTC) ");
     // get if are in summertime
     int daylight = NVS.getInt("summerTime");
