@@ -113,6 +113,7 @@ void LunoNoidGameApplication::GatherButtons() {
 bool LunoNoidGameApplication::Tick() {
     if ( millis() < nextRefresh ) { return false; }
     nextRefresh=millis()+(1000/24);
+    UINextTimeout = millis() + UITimeout; // disable screen timeout on this app
     char buffer[255];
     GatherButtons();
     int16_t ballXCell=ballX/40;
@@ -222,5 +223,6 @@ bool LunoNoidGameApplication::Tick() {
     sprintf(buffer,"  Remain: %d", credits );
     tft->drawString(buffer, tft->width(), 0);
     xSemaphoreGive(UISemaphore);
+    
     return false;
 }
