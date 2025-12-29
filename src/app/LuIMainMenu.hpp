@@ -25,11 +25,24 @@
 #include "../UI/controls/Text.hpp"
 #include "../UI/controls/IconMenu.hpp"
 
+/**
+ * @class LuIMainMenuApplication
+ * @brief Main menu application for the LunokWatch smartwatch
+ * 
+ * Displays a paginated menu of available applications with icons and labels.
+ * The application remembers the last selected menu item and restores it when
+ * the user returns from a launched application.
+ * 
+ * Layout:
+ * - Top: Paginator (dots indicating position in menu)
+ * - Center: IconMenu (menu items with icons)
+ * - Bottom: Text label showing current selection
+ */
 class LuIMainMenuApplication : public TemplateLuIApplication {
     public:
-        LuI::Paginator * paginator;
-        LuI::Text * entryText=nullptr;
-        LuI::IconMenu * mainMenu;
+        LuI::Paginator * paginator;          ///< Paginator showing menu position
+        LuI::Text      * entryText = nullptr;     ///< Text label of selected menu item
+        LuI::IconMenu  * mainMenu;            ///< Main menu with icons
         LuIMainMenuApplication();
         const char *AppName() override { return "Main Menu"; };
 };

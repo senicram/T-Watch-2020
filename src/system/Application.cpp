@@ -159,6 +159,18 @@ void LaunchApplicationTask(void * data) {
     vTaskDelete(NULL); // get out of my cicken!!!
 }
 void LaunchApplicationTaskSync(LaunchApplicationDescriptor * appDescriptor,bool synched) {
+    typedef void (*TransitionFunc)(TFT_eSprite*, TFT_eSprite*);
+    static const TransitionFunc transitions[] = {
+        ZoomOutTransition,
+        FadeTransition,
+        DisplaceTransition,
+        StripeTransition,
+        UpDownTransition,
+        ChessTransition,
+        FlipTransition
+    };
+    static constexpr size_t TOTAL_TRANSITIONS = sizeof(transitions) / sizeof(transitions[0]);
+
 //    LaunchApplicationDescriptor * dataDesc =  (LaunchApplicationDescriptor *)data;
     esp_event_post_to(uiEventloopHandle, UI_EVENTS, UI_EVENT_APP_LAUNCH_END, nullptr, 0, LUNOKIOT_EVENT_MANDATORY_TIME_TICKS);
     LunokIoTApplication *instance = appDescriptor->instance; // get app instance loaded
@@ -195,16 +207,9 @@ void LaunchApplicationTaskSync(LaunchApplicationDescriptor * appDescriptor,bool 
                         lUILog("Application: %p '%s' Transition: %ld\n", instance,instance->AppName(),transitionSelected);
                         //lUILog("@TODO DEBUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUG TRANSITION\n");
                         //transitionSelected=6; //@TODO DEBUG
-                        // run this part fast as possible
-                        if ( 0 == transitionSelected ) { ZoomOutTransition(ptrToCurrent->canvas,appView); }
-                        else if ( 1 == transitionSelected ) { FadeTransition(ptrToCurrent->canvas,appView); }
-                        else if ( 2 == transitionSelected ) { DisplaceTransition(ptrToCurrent->canvas,appView); }
-                        else if ( 3 == transitionSelected ) { StripeTransition(ptrToCurrent->canvas,appView); }
-                        else if ( 4 == transitionSelected ) { UpDownTransition(ptrToCurrent->canvas,appView); }
-                        else if ( 5 == transitionSelected ) { ChessTransition(ptrToCurrent->canvas,appView); }
-                        else if ( 6 == transitionSelected ) { FlipTransition(ptrToCurrent->canvas,appView); }
-                        transitionSelected++;
-                        if ( transitionSelected > 6 ) { transitionSelected = 0; }
+                        // run this part fast as possible - O(1) direct lookup instead of O(n) if-else chain
+                        transitions[transitionSelected](ptrToCurrent->canvas, appView);
+                        transitionSelected = (transitionSelected + 1) % TOTAL_TRANSITIONS;
 
                         // restore my priority
                         vTaskPrioritySet(NULL,myPriority);

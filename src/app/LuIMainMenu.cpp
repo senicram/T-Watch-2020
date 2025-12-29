@@ -60,120 +60,100 @@
 #include "NuKeyboard.hpp"
 
 using namespace LuI;
+
+// Macro to reduce boilerplate for standard application menu items
+// Creates an application instance, sets its back callback, and launches it
+#define MENU_APP_ENTRY(label, imgbits, imgh, imgw, AppClass)        \
+    {                                                                 \
+        label,                                                        \
+        imgbits,                                                      \
+        imgh,                                                         \
+        imgw,                                                         \
+        [](IGNORE_PARAM) {                                            \
+            AppClass * app = new AppClass();                          \
+            app->backCallback = [](void * obj){                       \
+                LaunchApplication(new LuIMainMenuApplication());      \
+            };                                                        \
+            LaunchApplication(app);                                   \
+        }                                                             \
+    }
+
+// Static variable to remember last selected menu item
+static int lastSelectedMenuEntry = 1;
+
 const IconMenuEntry LuIMenuItems[] = {
     
     {"Back", img_mainmenu_back_bits, img_mainmenu_back_height, img_mainmenu_back_width, [](IGNORE_PARAM) { LaunchWatchface(); } },
-//    {"About",img_mainmenu_about_bits, img_mainmenu_about_height, img_mainmenu_about_width, [](IGNORE_PARAM) { LaunchApplication(new AboutApplication()); } },
-//    {"Prov", img_mainmenu_provisioning_bits, img_mainmenu_provisioning_height, img_mainmenu_provisioning_width, [](void *unused) { LaunchApplication(new Provisioning2Application()); } },
-
-//    {"NuKeyb",img_mainmenu_keyboard_bits, img_mainmenu_keyboard_height, img_mainmenu_keyboard_width, [](void *unused) { LaunchApplication(new NuKeyboardApplication()); } },
-//    {"Keyboard",img_mainmenu_keyboard_bits, img_mainmenu_keyboard_height, img_mainmenu_keyboard_width, [](void *unused) { LaunchApplication(new FreeHandKeyboardSetupApplication()); } },
-
-//    {"MostUsed",img_mainmenu_debug_bits, img_mainmenu_debug_height, img_mainmenu_debug_width, [](IGNORE_PARAM) { LaunchApplication(new LuIMostUsedApplication()); } },
-//    {"Chess",img_mainmenu_chess_bits, img_mainmenu_chess_height, img_mainmenu_chess_width, [](IGNORE_PARAM) { LaunchApplication(new ChessApplication()); } },
-//    {"Log",img_mainmenu_cpu_bits, img_mainmenu_cpu_height, img_mainmenu_cpu_width, [](void *unused) { LaunchApplication(new LogViewApplication()); } },
-
-//    {"Partitions",img_mainmenu_partition_bits, img_mainmenu_partition_height, img_mainmenu_partition_width, [](IGNORE_PARAM) { LaunchApplication(new PartitionExplorerApplication()); } },
-//    {"FileBrowser",img_mainmenu_folder_bits, img_mainmenu_folder_height, img_mainmenu_folder_width, [](IGNORE_PARAM) { LaunchApplication(new FileExplorerApplication()); } },
-//    {"Calendar",img_mainmenu_calendar_bits, img_mainmenu_calendar_height, img_mainmenu_calendar_width, [](IGNORE_PARAM) { LaunchApplication(new CalendarApplication()); } },
-    //{"Dungeon",img_mainmenu_dungeon_bits, img_mainmenu_dungeon_height, img_mainmenu_dungeon_width, [](void *unused) { LaunchApplication(new DungeonGameApplication()); } },
-//    {"LunoNoid",img_mainmenu_lunonoid_bits, img_mainmenu_lunonoid_height, img_mainmenu_lunonoid_width, [](void *unused) { LaunchApplication(new LunoNoidGameApplication()); } },
-
-//    {"Prov", img_mainmenu_provisioning_bits, img_mainmenu_provisioning_height, img_mainmenu_provisioning_width, [](void *unused) { LaunchApplication(new Provisioning2Application()); } },
-
+//    MENU_APP_ENTRY("Prov",                                           img_mainmenu_provisioning_bits,    img_mainmenu_provisioning_height,    img_mainmenu_provisioning_width,    Provisioning2Application),
+//    MENU_APP_ENTRY("NuKeyb",                                         img_mainmenu_keyboard_bits,        img_mainmenu_keyboard_height,        img_mainmenu_keyboard_width,        NuKeyboardApplication),
+//    MENU_APP_ENTRY("Keyboard",                                       img_mainmenu_keyboard_bits,        img_mainmenu_keyboard_height,        img_mainmenu_keyboard_width,        FreeHandKeyboardSetupApplication),
+//    MENU_APP_ENTRY("MostUsed",                                       img_mainmenu_debug_bits,           img_mainmenu_debug_height,           img_mainmenu_debug_width,           LuIMostUsedApplication),
+//    MENU_APP_ENTRY("Chess",                                          img_mainmenu_chess_bits,           img_mainmenu_chess_height,           img_mainmenu_chess_width,           ChessApplication),
+//    MENU_APP_ENTRY("Log",                                            img_mainmenu_cpu_bits,             img_mainmenu_cpu_height,             img_mainmenu_cpu_width,             LogViewApplication),
+//    MENU_APP_ENTRY("Partitions",                                     img_mainmenu_partition_bits,       img_mainmenu_partition_height,       img_mainmenu_partition_width,       PartitionExplorerApplication),
+//    MENU_APP_ENTRY("FileBrowser",                                    img_mainmenu_folder_bits,          img_mainmenu_folder_height,          img_mainmenu_folder_width,          FileExplorerApplication),
+//    MENU_APP_ENTRY("Calendar",                                       img_mainmenu_calendar_bits,        img_mainmenu_calendar_height,        img_mainmenu_calendar_width,        CalendarApplication),
+//    MENU_APP_ENTRY("Dungeon",                                        img_mainmenu_dungeon_bits,         img_mainmenu_dungeon_height,         img_mainmenu_dungeon_width,         DungeonGameApplication),
+//    MENU_APP_ENTRY("LunoNoid",                                       img_mainmenu_lunonoid_bits,        img_mainmenu_lunonoid_height,        img_mainmenu_lunonoid_width,        LunoNoidGameApplication),
 //    {"Lua",img_mainmenu_debug_bits, img_mainmenu_debug_height, img_mainmenu_debug_width, [](IGNORE_PARAM) { LaunchApplication(new LuaLauncher(HelloworldLuaScript)); } },
 //    {"Screen",img_mainmenu_debug_bits, img_mainmenu_debug_height, img_mainmenu_debug_width, [&](IGNORE_PARAM) { LaunchApplication(new ScreenTestApplication()); } },
-//    {"Rubik's",img_mainmenu_debug_bits, img_mainmenu_debug_height, img_mainmenu_debug_width, [](IGNORE_PARAM) { LaunchApplication(new LuIExperimentRubiksApplication()); } },
-//    {"LuIDemos",img_mainmenu_debug_bits, img_mainmenu_debug_height, img_mainmenu_debug_width, [](IGNORE_PARAM) { LaunchApplication(new LuiExperimentApplication()); } },
-    {"Bright",img_mainmenu_bright_bits, img_mainmenu_bright_height, img_mainmenu_bright_width, [](IGNORE_PARAM) { 
-        BrightnessApplication * app = new BrightnessApplication();
-        app->backCallback = [](void * obj){ LaunchApplication(new LuIMainMenuApplication()); };
-        LaunchApplication(app);
-    } },
+//    MENU_APP_ENTRY("Rubik's",                                        img_mainmenu_debug_bits,           img_mainmenu_debug_height,           img_mainmenu_debug_width,           LuIExperimentRubiksApplication),
+//    MENU_APP_ENTRY("LuIDemos",                                       img_mainmenu_debug_bits,           img_mainmenu_debug_height,           img_mainmenu_debug_width,           LuiExperimentApplication),
+
+    MENU_APP_ENTRY("Bright",                                         img_mainmenu_bright_bits,          img_mainmenu_bright_height,          img_mainmenu_bright_width,          BrightnessApplication),
 #ifdef LUNOKIOT_LILYGO_TWATCH_BUTTON_FAULTY
-    {"Lamp",img_mainmenu_lamp_bits, img_mainmenu_lamp_height, img_mainmenu_lamp_width, [](IGNORE_PARAM) { 
-        LampApplication * app = new LampApplication();
-        app->backCallback = [](void * obj){ LaunchApplication(new LuIMainMenuApplication()); };
-        LaunchApplication(app);
-    } },
+    MENU_APP_ENTRY("Lamp",                                           img_mainmenu_lamp_bits,            img_mainmenu_lamp_height,            img_mainmenu_lamp_width,            LampApplication),
 #endif
-    {"Notify", img_mainmenu_notifications_bits, img_mainmenu_notifications_height, img_mainmenu_notifications_width, [](IGNORE_PARAM) { 
-        NotificacionsApplication * app = new NotificacionsApplication();
-        app->backCallback = [](void * obj){ LaunchApplication(new LuIMainMenuApplication()); };
-        LaunchApplication(app);
-    } },
-    {"Steps",img_mainmenu_steps_bits, img_mainmenu_steps_height, img_mainmenu_steps_width, [](IGNORE_PARAM) { 
-        StepsApplication * app = new StepsApplication();
-        app->backCallback = [](void * obj){ LaunchApplication(new LuIMainMenuApplication()); };
-        LaunchApplication(app);
-    } },
-    {"Stopwatch",img_mainmenu_stopwatch_bits, img_mainmenu_stopwatch_height, img_mainmenu_stopwatch_width, [](IGNORE_PARAM) { 
-        StopwatchApplication * app = new StopwatchApplication();
-        app->backCallback = [](void * obj){ LaunchApplication(new LuIMainMenuApplication()); };
-        LaunchApplication(app);
-    } },
-    {"Settings",img_mainmenu_options_bits, img_mainmenu_options_height, img_mainmenu_options_width, [](IGNORE_PARAM) { 
-        LuISettingsMenuApplication * app = new LuISettingsMenuApplication();
-        app->backCallback = [](void * obj){ LaunchApplication(new LuIMainMenuApplication()); };
-        LaunchApplication(app);
-    } },
-    {"Locations",img_mainmenu_zone_bits, img_mainmenu_zone_height, img_mainmenu_zone_width, [](IGNORE_PARAM) { 
-        KnowLocationApplication * app = new KnowLocationApplication();
-        app->backCallback = [](void * obj){ LaunchApplication(new LuIMainMenuApplication()); };
-        LaunchApplication(app);
-    } },
-    {"Calendar",img_mainmenu_calendar_bits, img_mainmenu_calendar_height, img_mainmenu_calendar_width, [](IGNORE_PARAM) { 
-        CalendarApplication * app = new CalendarApplication();
-        app->backCallback = [](void * obj){ LaunchApplication(new LuIMainMenuApplication()); };
-        LaunchApplication(app);
-    } },
-    {"Calculator",img_mainmenu_calculator_bits, img_mainmenu_calculator_height, img_mainmenu_calculator_width, [](IGNORE_PARAM) { 
-        CalculatorApplication * app = new CalculatorApplication();
-        app->backCallback = [](void * obj){ LaunchApplication(new LuIMainMenuApplication()); };
-        LaunchApplication(app);
-    } },
-    {"Games",img_mainmenu_games_bits, img_mainmenu_games_height, img_mainmenu_games_width, [](IGNORE_PARAM) { 
-        LuIGamesMenuApplication * app = new LuIGamesMenuApplication();
-        app->backCallback = [](void * obj){ LaunchApplication(new LuIMainMenuApplication()); };
-        LaunchApplication(app);
-    } },
-    {"Battery",img_mainmenu_battery_bits, img_mainmenu_battery_height, img_mainmenu_battery_width,  [](IGNORE_PARAM) { 
-        BatteryApplication * app = new BatteryApplication();
-        app->backCallback = [](void * obj){ LaunchApplication(new LuIMainMenuApplication()); };
-        LaunchApplication(app);
-    } },
-    {"About",img_mainmenu_about_bits, img_mainmenu_about_height, img_mainmenu_about_width, [](IGNORE_PARAM) { 
-        AboutApplication * app = new AboutApplication();
-        app->backCallback = [](void * obj){ LaunchApplication(new LuIMainMenuApplication()); };
-        LaunchApplication(app);
-    } },
+    MENU_APP_ENTRY("Notify",                                         img_mainmenu_notifications_bits,   img_mainmenu_notifications_height,   img_mainmenu_notifications_width,   NotificacionsApplication),
+    MENU_APP_ENTRY("Steps",                                          img_mainmenu_steps_bits,           img_mainmenu_steps_height,           img_mainmenu_steps_width,           StepsApplication),
+    MENU_APP_ENTRY("Stopwatch",                                      img_mainmenu_stopwatch_bits,       img_mainmenu_stopwatch_height,       img_mainmenu_stopwatch_width,       StopwatchApplication),
+    MENU_APP_ENTRY("Settings",                                       img_mainmenu_options_bits,         img_mainmenu_options_height,         img_mainmenu_options_width,         LuISettingsMenuApplication),
+    MENU_APP_ENTRY("Locations",                                      img_mainmenu_zone_bits,            img_mainmenu_zone_height,            img_mainmenu_zone_width,            KnowLocationApplication),
+    MENU_APP_ENTRY("Calendar",                                       img_mainmenu_calendar_bits,        img_mainmenu_calendar_height,        img_mainmenu_calendar_width,        CalendarApplication),
+    MENU_APP_ENTRY("Calculator",                                     img_mainmenu_calculator_bits,      img_mainmenu_calculator_height,      img_mainmenu_calculator_width,      CalculatorApplication),
+    MENU_APP_ENTRY("Games",                                          img_mainmenu_games_bits,           img_mainmenu_games_height,           img_mainmenu_games_width,           LuIGamesMenuApplication),
+    MENU_APP_ENTRY("Battery",                                        img_mainmenu_battery_bits,         img_mainmenu_battery_height,         img_mainmenu_battery_width,         BatteryApplication),
+    MENU_APP_ENTRY("About",                                          img_mainmenu_about_bits,           img_mainmenu_about_height,           img_mainmenu_about_width,           AboutApplication),
 };
 int LuIMenuItemsNumber = sizeof(LuIMenuItems) / sizeof(LuIMenuItems[0])-1;
 
 
 LuIMainMenuApplication::LuIMainMenuApplication() {
-    directDraw=false; // disable direct draw meanwhile build the UI
+    directDraw = false; // disable direct draw meanwhile build the UI
     canvas->fillSprite(TFT_BLACK);
-    Container * screen = new Container(LuI_Horizontal_Layout,3); // up pager, center icon, bottom text
-    paginator=new Paginator(LuIMenuItemsNumber);
-    paginator->border=40;
+    
+    // Create screen with 3 sections: paginator, menu, and entry text
+    Container * screen = new Container(LuI_Horizontal_Layout, 3);
+    
+    // Setup paginator
+    paginator = new Paginator(LuIMenuItemsNumber);
+    paginator->border = 40;
     paginator->SetBackgroundColor(TFT_BLACK);
-    screen->AddChild(paginator,0.5);
-    mainMenu = new IconMenu(LuI_Horizontal_Layout,LuIMenuItemsNumber,LuIMenuItems);
-    screen->AddChild(mainMenu,2.0);
-    entryText=new Text((char*)"",TFT_WHITE,false,1,&FreeMonoBold18pt7b);
+    screen->AddChild(paginator, 0.5);
+    
+    // Setup main menu
+    mainMenu = new IconMenu(LuI_Horizontal_Layout, LuIMenuItemsNumber, LuIMenuItems);
+    screen->AddChild(mainMenu, 2.0);
+    
+    // Setup entry text
+    entryText = new Text((char*)"", TFT_WHITE, false, 1, &FreeMonoBold18pt7b);
     entryText->SetBackgroundColor(TFT_BLACK);
-    screen->AddChild(entryText,0.5);
-    mainMenu->pageCallback = [&,this](IGNORE_PARAM){
-        paginator->SetCurrent(mainMenu->selectedEntry); // update paginator
-        entryText->SetText((char*)(LuIMenuItems[mainMenu->selectedEntry].name)); // update text
+    screen->AddChild(entryText, 0.5);
+    
+    // Setup page callback to sync paginator and text with menu selection
+    mainMenu->pageCallback = [&, this](IGNORE_PARAM) {
+        paginator->SetCurrent(mainMenu->selectedEntry);
+        entryText->SetText((char*)(LuIMenuItems[mainMenu->selectedEntry].name));
+        lastSelectedMenuEntry = mainMenu->selectedEntry; // remember selection
     };
-    // update position later to clarify code
-    const int firstOffset=1;
-    mainMenu->selectedEntry=firstOffset; // don't show "back" as first option
-    paginator->SetCurrent(firstOffset);
-    entryText->SetText((char*)LuIMenuItems[firstOffset].name);
+    
+    // Restore last selected entry or default to first app (skip "Back")
+    const int firstOffset = 1;
+    int selectedEntry = (lastSelectedMenuEntry < LuIMenuItemsNumber) ? lastSelectedMenuEntry : firstOffset;
+    mainMenu->selectedEntry = selectedEntry;
+    paginator->SetCurrent(selectedEntry);
+    entryText->SetText((char*)LuIMenuItems[selectedEntry].name);
+    
     AddChild(screen);
-
-    directDraw=true; // allow controls to sync itself with the screen
+    directDraw = true; // allow controls to sync itself with the screen
 }
