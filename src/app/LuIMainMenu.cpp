@@ -85,20 +85,68 @@ const IconMenuEntry LuIMenuItems[] = {
 //    {"Screen",img_mainmenu_debug_bits, img_mainmenu_debug_height, img_mainmenu_debug_width, [&](IGNORE_PARAM) { LaunchApplication(new ScreenTestApplication()); } },
 //    {"Rubik's",img_mainmenu_debug_bits, img_mainmenu_debug_height, img_mainmenu_debug_width, [](IGNORE_PARAM) { LaunchApplication(new LuIExperimentRubiksApplication()); } },
 //    {"LuIDemos",img_mainmenu_debug_bits, img_mainmenu_debug_height, img_mainmenu_debug_width, [](IGNORE_PARAM) { LaunchApplication(new LuiExperimentApplication()); } },
-    {"Bright",img_mainmenu_bright_bits, img_mainmenu_bright_height, img_mainmenu_bright_width, [](IGNORE_PARAM) { LaunchApplication(new BrightnessApplication()); } },
+    {"Bright",img_mainmenu_bright_bits, img_mainmenu_bright_height, img_mainmenu_bright_width, [](IGNORE_PARAM) { 
+        BrightnessApplication * app = new BrightnessApplication();
+        app->backCallback = [](void * obj){ LaunchApplication(new LuIMainMenuApplication()); };
+        LaunchApplication(app);
+    } },
 #ifdef LUNOKIOT_LILYGO_TWATCH_BUTTON_FAULTY
-    {"Lamp",img_mainmenu_lamp_bits, img_mainmenu_lamp_height, img_mainmenu_lamp_width, [](IGNORE_PARAM) { LaunchApplication(new LampApplication()); } },
+    {"Lamp",img_mainmenu_lamp_bits, img_mainmenu_lamp_height, img_mainmenu_lamp_width, [](IGNORE_PARAM) { 
+        LampApplication * app = new LampApplication();
+        app->backCallback = [](void * obj){ LaunchApplication(new LuIMainMenuApplication()); };
+        LaunchApplication(app);
+    } },
 #endif
-    {"Notify", img_mainmenu_notifications_bits, img_mainmenu_notifications_height, img_mainmenu_notifications_width, [](IGNORE_PARAM) { LaunchApplication(new NotificacionsApplication()); } },
-    {"Steps",img_mainmenu_steps_bits, img_mainmenu_steps_height, img_mainmenu_steps_width, [](IGNORE_PARAM) { LaunchApplication(new StepsApplication()); } },
-    {"Battery",img_mainmenu_battery_bits, img_mainmenu_battery_height, img_mainmenu_battery_width,  [](IGNORE_PARAM) { LaunchApplication(new BatteryApplication()); } },
-    {"Stopwatch",img_mainmenu_stopwatch_bits, img_mainmenu_stopwatch_height, img_mainmenu_stopwatch_width, [](IGNORE_PARAM) { LaunchApplication(new StopwatchApplication()); } },
-    {"Settings",img_mainmenu_options_bits, img_mainmenu_options_height, img_mainmenu_options_width, [](IGNORE_PARAM) { LaunchApplication(new LuISettingsMenuApplication()); } },
-    {"Locations",img_mainmenu_zone_bits, img_mainmenu_zone_height, img_mainmenu_zone_width, [](IGNORE_PARAM) { LaunchApplication(new KnowLocationApplication()); } },
-    {"Calendar",img_mainmenu_calendar_bits, img_mainmenu_calendar_height, img_mainmenu_calendar_width, [](IGNORE_PARAM) { LaunchApplication(new CalendarApplication()); } },
-    {"Calculator",img_mainmenu_calculator_bits, img_mainmenu_calculator_height, img_mainmenu_calculator_width, [](IGNORE_PARAM) { LaunchApplication(new CalculatorApplication()); } },
-    {"Games",img_mainmenu_games_bits, img_mainmenu_games_height, img_mainmenu_games_width, [](IGNORE_PARAM) { LaunchApplication(new LuIGamesMenuApplication()); } },
-    {"About",img_mainmenu_about_bits, img_mainmenu_about_height, img_mainmenu_about_width, [](IGNORE_PARAM) { LaunchApplication(new AboutApplication()); } },
+    {"Notify", img_mainmenu_notifications_bits, img_mainmenu_notifications_height, img_mainmenu_notifications_width, [](IGNORE_PARAM) { 
+        NotificacionsApplication * app = new NotificacionsApplication();
+        app->backCallback = [](void * obj){ LaunchApplication(new LuIMainMenuApplication()); };
+        LaunchApplication(app);
+    } },
+    {"Steps",img_mainmenu_steps_bits, img_mainmenu_steps_height, img_mainmenu_steps_width, [](IGNORE_PARAM) { 
+        StepsApplication * app = new StepsApplication();
+        app->backCallback = [](void * obj){ LaunchApplication(new LuIMainMenuApplication()); };
+        LaunchApplication(app);
+    } },
+    {"Stopwatch",img_mainmenu_stopwatch_bits, img_mainmenu_stopwatch_height, img_mainmenu_stopwatch_width, [](IGNORE_PARAM) { 
+        StopwatchApplication * app = new StopwatchApplication();
+        app->backCallback = [](void * obj){ LaunchApplication(new LuIMainMenuApplication()); };
+        LaunchApplication(app);
+    } },
+    {"Settings",img_mainmenu_options_bits, img_mainmenu_options_height, img_mainmenu_options_width, [](IGNORE_PARAM) { 
+        LuISettingsMenuApplication * app = new LuISettingsMenuApplication();
+        app->backCallback = [](void * obj){ LaunchApplication(new LuIMainMenuApplication()); };
+        LaunchApplication(app);
+    } },
+    {"Locations",img_mainmenu_zone_bits, img_mainmenu_zone_height, img_mainmenu_zone_width, [](IGNORE_PARAM) { 
+        KnowLocationApplication * app = new KnowLocationApplication();
+        app->backCallback = [](void * obj){ LaunchApplication(new LuIMainMenuApplication()); };
+        LaunchApplication(app);
+    } },
+    {"Calendar",img_mainmenu_calendar_bits, img_mainmenu_calendar_height, img_mainmenu_calendar_width, [](IGNORE_PARAM) { 
+        CalendarApplication * app = new CalendarApplication();
+        app->backCallback = [](void * obj){ LaunchApplication(new LuIMainMenuApplication()); };
+        LaunchApplication(app);
+    } },
+    {"Calculator",img_mainmenu_calculator_bits, img_mainmenu_calculator_height, img_mainmenu_calculator_width, [](IGNORE_PARAM) { 
+        CalculatorApplication * app = new CalculatorApplication();
+        app->backCallback = [](void * obj){ LaunchApplication(new LuIMainMenuApplication()); };
+        LaunchApplication(app);
+    } },
+    {"Games",img_mainmenu_games_bits, img_mainmenu_games_height, img_mainmenu_games_width, [](IGNORE_PARAM) { 
+        LuIGamesMenuApplication * app = new LuIGamesMenuApplication();
+        app->backCallback = [](void * obj){ LaunchApplication(new LuIMainMenuApplication()); };
+        LaunchApplication(app);
+    } },
+    {"Battery",img_mainmenu_battery_bits, img_mainmenu_battery_height, img_mainmenu_battery_width,  [](IGNORE_PARAM) { 
+        BatteryApplication * app = new BatteryApplication();
+        app->backCallback = [](void * obj){ LaunchApplication(new LuIMainMenuApplication()); };
+        LaunchApplication(app);
+    } },
+    {"About",img_mainmenu_about_bits, img_mainmenu_about_height, img_mainmenu_about_width, [](IGNORE_PARAM) { 
+        AboutApplication * app = new AboutApplication();
+        app->backCallback = [](void * obj){ LaunchApplication(new LuIMainMenuApplication()); };
+        LaunchApplication(app);
+    } },
 };
 int LuIMenuItemsNumber = sizeof(LuIMenuItems) / sizeof(LuIMenuItems[0])-1;
 

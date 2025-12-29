@@ -30,7 +30,11 @@ TemplateApplication::~TemplateApplication() { delete btnBack; }
 TemplateApplication::TemplateApplication() {
     btnBack=new ButtonImageXBMWidget(0,canvas->height()-img_backscreen_42_height,
                 img_backscreen_42_width,img_backscreen_42_height,[&,this](void *unused){
-        LaunchWatchface();
+        if ( nullptr != backCallback ) {
+            backCallback(this);
+        } else {
+            LaunchWatchface();
+        }
     },img_backscreen_42_bits,img_backscreen_42_height,img_backscreen_42_width,ThCol(background_alt),0,false);
 }
 

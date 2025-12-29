@@ -57,7 +57,13 @@ FileExplorerApplication::FileExplorerApplication(const char *path) {
     // add back button to dismiss
     LuI::Button *backButton = new LuI::Button(LuI_Vertical_Layout,1,NO_DECORATION);
     backButton->border=0;
-    backButton->tapCallback=[](void * obj){ LaunchWatchface(); }; // callback when tap
+    backButton->tapCallback=[&,this](void * obj){ 
+        if ( nullptr != backCallback ) {
+            backCallback(this);
+        } else {
+            LaunchWatchface();
+        }
+    }; // callback when tap
     // load icon in XBM format
     XBM * backButtonIcon = new XBM(img_backscreen_42_width,img_backscreen_42_height,img_backscreen_42_bits);
     // put the icon inside the button

@@ -45,6 +45,7 @@ class LunokIoTApplication {
     public:
         bool dirty=false;
         TFT_eSprite *canvas; // application buffer (all must draw here)
+        std::function<void(void*)> backCallback = nullptr;  // callback to previous screen
         // build canvas
         LunokIoTApplication();
         virtual ~LunokIoTApplication();

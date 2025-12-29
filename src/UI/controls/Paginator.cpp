@@ -23,6 +23,14 @@
 
 using namespace LuI;
 
+/**
+ * Paginator - Visual page indicator control
+ * 
+ * Displays a row of dots representing pagination state. Shows which page is currently
+ * active by filling the corresponding dot. Unfilled dots represent other pages.
+ * Useful for multi-page UI layouts, carousels, and navigation indicators.
+ */
+
 Paginator::Paginator(IN uint8_t pages): pages(pages) {
 }
 
