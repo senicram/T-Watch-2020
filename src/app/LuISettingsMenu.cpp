@@ -76,6 +76,8 @@ using namespace LuI;
         }                                                             \
     }
 
+const int FIRST_SETTINGS_MENU_ENTRY_INDEX = 2;
+
 const IconMenuEntry LuISettingsMenuItems[] = {
     {"Back", img_mainmenu_watchface_bits, img_mainmenu_watchface_height, img_mainmenu_watchface_width, [](IGNORE_PARAM) { LaunchWatchface(); } },
     {"Back", img_mainmenu_back_bits, img_mainmenu_back_height, img_mainmenu_back_width, [](IGNORE_PARAM) { LaunchApplication(new LuIMainMenuApplication()); } },
@@ -132,8 +134,7 @@ LuISettingsMenuApplication::LuISettingsMenuApplication() {
     };
     
     // Restore last selected entry or default to first app (skip "Back" entries at 0, 1)
-    const int firstOffset = 2;
-    int selectedEntry = (lastSelectedSettingsEntry < LuISettingsMenuItemsNumber) ? lastSelectedSettingsEntry : firstOffset;
+    int selectedEntry = (lastSelectedSettingsEntry > FIRST_SETTINGS_MENU_ENTRY_INDEX) ? lastSelectedSettingsEntry : FIRST_SETTINGS_MENU_ENTRY_INDEX;
     mainMenu->selectedEntry = selectedEntry;
     paginator->SetCurrent(selectedEntry);
     entryText->SetText((char*)LuISettingsMenuItems[selectedEntry].name);

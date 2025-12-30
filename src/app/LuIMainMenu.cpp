@@ -80,6 +80,7 @@ using namespace LuI;
 
 // Static variable to remember last selected menu item
 static int lastSelectedMenuEntry = 1;
+static const int FIRST_MAIN_MENU_ENTRY_INDEX = 1;
 
 const IconMenuEntry LuIMenuItems[] = {
     
@@ -148,8 +149,7 @@ LuIMainMenuApplication::LuIMainMenuApplication() {
     };
     
     // Restore last selected entry or default to first app (skip "Back")
-    const int firstOffset = 1;
-    int selectedEntry = (lastSelectedMenuEntry < LuIMenuItemsNumber) ? lastSelectedMenuEntry : firstOffset;
+    int selectedEntry = (lastSelectedMenuEntry > FIRST_MAIN_MENU_ENTRY_INDEX) ? lastSelectedMenuEntry : FIRST_MAIN_MENU_ENTRY_INDEX;
     mainMenu->selectedEntry = selectedEntry;
     paginator->SetCurrent(selectedEntry);
     entryText->SetText((char*)LuIMenuItems[selectedEntry].name);
