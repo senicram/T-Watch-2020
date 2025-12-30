@@ -49,53 +49,95 @@
 #include "PartitionBrowser.hpp"
 
 using namespace LuI;
+
+// Macro to reduce boilerplate for standard application menu items.
+// Creates an application instance, sets its back callback to return to settings menu,
+// and launches the application. This ensures consistent navigation behavior across
+// all settings menu items.
+//
+// Parameters:
+//   label     - Menu item label string
+//   imgbits   - Bitmap data for the menu icon
+//   imgh      - Icon height in pixels
+//   imgw      - Icon width in pixels
+//   AppClass  - Application class to instantiate
+#define MENU_APP_ENTRY(label, imgbits, imgh, imgw, AppClass)        \
+    {                                                                 \
+        label,                                                        \
+        imgbits,                                                      \
+        imgh,                                                         \
+        imgw,                                                         \
+        [](IGNORE_PARAM) {                                            \
+            AppClass * app = new AppClass();                          \
+            app->backCallback = [](void * obj){                       \
+                LaunchApplication(new LuISettingsMenuApplication()); \
+            };                                                        \
+            LaunchApplication(app);                                   \
+        }                                                             \
+    }
+
 const IconMenuEntry LuISettingsMenuItems[] = {
     {"Back", img_mainmenu_watchface_bits, img_mainmenu_watchface_height, img_mainmenu_watchface_width, [](IGNORE_PARAM) { LaunchWatchface(); } },
     {"Back", img_mainmenu_back_bits, img_mainmenu_back_height, img_mainmenu_back_width, [](IGNORE_PARAM) { LaunchApplication(new LuIMainMenuApplication()); } },
-    {"Radios",img_mainmenu_wifi_bits, img_mainmenu_wifi_height, img_mainmenu_wifi_width, [](void *unused) { LaunchApplication(new SettingsApplication()); } },
-    {"Gestures",img_mainmenu_gesture_bits, img_mainmenu_gesture_height, img_mainmenu_gesture_width, [](void *unused) { LaunchApplication(new GestureSettings()); } },
-    {"Watchface",img_mainmenu_watchface_bits, img_mainmenu_watchface_height, img_mainmenu_watchface_width, [](void *unused) { LaunchApplication(new WatchfaceSelectorApplication()); } },
-    {"Themes",img_mainmenu_themes_bits, img_mainmenu_themes_height, img_mainmenu_themes_width, [](void *unused) { LaunchApplication(new ThemeApplication()); } },
-    {"Pair",img_mainmenu_bluetooth_bits, img_mainmenu_bluetooth_height, img_mainmenu_bluetooth_width, [](void *unused) { LaunchApplication(new BluetoothApplication()); } },
-    {"Advanced",img_mainmenu_cpu_bits, img_mainmenu_cpu_height, img_mainmenu_cpu_width, [](void *unused) { LaunchApplication(new AdvancedSettingsApplication()); } },
-    //{"LittleFS",img_mainmenu_folder_bits, img_mainmenu_folder_height, img_mainmenu_folder_width, [](IGNORE_PARAM) { LaunchApplication(new FileExplorerApplication()); } },
-    {"Keyboard",img_mainmenu_keyboard_bits, img_mainmenu_keyboard_height, img_mainmenu_keyboard_width, [](void *unused) { LaunchApplication(new FreeHandKeyboardSetupApplication()); } },
-    {"BLEMonitor",img_mainmenu_debug_bits, img_mainmenu_debug_height, img_mainmenu_debug_width, [](void *unused) { LaunchApplication(new BLEMonitorApplication()); } },
-    {"Set time", img_mainmenu_settime_bits, img_mainmenu_settime_height, img_mainmenu_settime_width, [](void *unused) { LaunchApplication(new SetTimeApplication()); } },
-    {"Timezone",img_timezone_120_bits, img_timezone_120_height, img_timezone_120_width, [](void *unused) { LaunchApplication(new SetTimeZoneApplication()); } },
-    {"Prov", img_mainmenu_provisioning_bits, img_mainmenu_provisioning_height, img_mainmenu_provisioning_width, [](void *unused) { LaunchApplication(new Provisioning2Application()); } },
-    {"Rotation", img_rotate_120_bits, img_rotate_120_height, img_rotate_120_width, [](void *unused) { LaunchApplication(new LuIRotateApplication()); } },
-    {"Partitions",img_mainmenu_partition_bits, img_mainmenu_partition_height, img_mainmenu_partition_width, [](IGNORE_PARAM) { LaunchApplication(new PartitionExplorerApplication()); } },
-    {"Bright",img_mainmenu_bright_bits, img_mainmenu_bright_height, img_mainmenu_bright_width, [](void *unused) { LaunchApplication(new BrightnessApplication()); } },
+    MENU_APP_ENTRY("Radios",                                         img_mainmenu_wifi_bits,            img_mainmenu_wifi_height,            img_mainmenu_wifi_width,            SettingsApplication),
+    MENU_APP_ENTRY("Gestures",                                       img_mainmenu_gesture_bits,         img_mainmenu_gesture_height,         img_mainmenu_gesture_width,         GestureSettings),
+    MENU_APP_ENTRY("Watchface",                                      img_mainmenu_watchface_bits,       img_mainmenu_watchface_height,       img_mainmenu_watchface_width,       WatchfaceSelectorApplication),
+    MENU_APP_ENTRY("Themes",                                         img_mainmenu_themes_bits,          img_mainmenu_themes_height,          img_mainmenu_themes_width,          ThemeApplication),
+    MENU_APP_ENTRY("Pair",                                           img_mainmenu_bluetooth_bits,       img_mainmenu_bluetooth_height,       img_mainmenu_bluetooth_width,       BluetoothApplication),
+    MENU_APP_ENTRY("Advanced",                                       img_mainmenu_cpu_bits,             img_mainmenu_cpu_height,             img_mainmenu_cpu_width,             AdvancedSettingsApplication),
+    //MENU_APP_ENTRY("LittleFS",                                      img_mainmenu_folder_bits,          img_mainmenu_folder_height,          img_mainmenu_folder_width,          FileExplorerApplication),
+    MENU_APP_ENTRY("Keyboard",                                       img_mainmenu_keyboard_bits,        img_mainmenu_keyboard_height,        img_mainmenu_keyboard_width,        FreeHandKeyboardSetupApplication),
+    MENU_APP_ENTRY("BLEMonitor",                                     img_mainmenu_debug_bits,           img_mainmenu_debug_height,           img_mainmenu_debug_width,           BLEMonitorApplication),
+    MENU_APP_ENTRY("Set time",                                       img_mainmenu_settime_bits,         img_mainmenu_settime_height,         img_mainmenu_settime_width,         SetTimeApplication),
+    MENU_APP_ENTRY("Timezone",                                       img_timezone_120_bits,             img_timezone_120_height,             img_timezone_120_width,             SetTimeZoneApplication),
+    MENU_APP_ENTRY("Prov",                                           img_mainmenu_provisioning_bits,    img_mainmenu_provisioning_height,    img_mainmenu_provisioning_width,    Provisioning2Application),
+    MENU_APP_ENTRY("Rotation",                                       img_rotate_120_bits,               img_rotate_120_height,               img_rotate_120_width,               LuIRotateApplication),
+    MENU_APP_ENTRY("Partitions",                                     img_mainmenu_partition_bits,       img_mainmenu_partition_height,       img_mainmenu_partition_width,       PartitionExplorerApplication),
+    MENU_APP_ENTRY("Bright",                                         img_mainmenu_bright_bits,          img_mainmenu_bright_height,          img_mainmenu_bright_width,          BrightnessApplication),
 };
 int LuISettingsMenuItemsNumber = sizeof(LuISettingsMenuItems) / sizeof(LuISettingsMenuItems[0])-1;
 
+// Static variable to remember last selected settings menu item
+static int lastSelectedSettingsEntry = 2;
 
 LuISettingsMenuApplication::LuISettingsMenuApplication() {
-    directDraw=false; // disable direct draw meanwhile build the UI
+    directDraw = false;  // disable direct draw while building the UI
     canvas->fillSprite(TFT_BLACK);
-    Container * screen = new Container(LuI_Horizontal_Layout,3); // up pager, center icon, bottom text
-    paginator=new Paginator(LuISettingsMenuItemsNumber);
-    paginator->border=40;
+    
+    // Create screen with 3 sections: paginator, menu, and entry text
+    Container * screen = new Container(LuI_Horizontal_Layout, 3);
+    
+    // Setup paginator
+    paginator = new Paginator(LuISettingsMenuItemsNumber);
+    paginator->border = 40;
     paginator->SetBackgroundColor(TFT_BLACK);
-    screen->AddChild(paginator,0.5);
-    mainMenu = new IconMenu(LuI_Horizontal_Layout,LuISettingsMenuItemsNumber,LuISettingsMenuItems);
-    screen->AddChild(mainMenu,2.0);
-    entryText=new Text((char*)"",TFT_WHITE,false,1,&FreeMonoBold18pt7b);
+    screen->AddChild(paginator, 0.5);
+    
+    // Setup main menu
+    mainMenu = new IconMenu(LuI_Horizontal_Layout, LuISettingsMenuItemsNumber, LuISettingsMenuItems);
+    screen->AddChild(mainMenu, 2.0);
+    
+    // Setup entry text display
+    entryText = new Text((char*)"", TFT_WHITE, false, 1, &FreeMonoBold18pt7b);
     entryText->SetBackgroundColor(TFT_BLACK);
-    screen->AddChild(entryText,0.5);
-    mainMenu->pageCallbackParam=this;
-    mainMenu->pageCallback = [](void * obj){
+    screen->AddChild(entryText, 0.5);
+    
+    // Setup page callback to sync paginator and text with menu selection
+    mainMenu->pageCallbackParam = this;
+    mainMenu->pageCallback = [](void * obj) {
         LuISettingsMenuApplication * self = (LuISettingsMenuApplication *)obj;
-        self->paginator->SetCurrent(self->mainMenu->selectedEntry); // update paginator
-        self->entryText->SetText((char*)(LuISettingsMenuItems[self->mainMenu->selectedEntry].name)); // update text
+        self->paginator->SetCurrent(self->mainMenu->selectedEntry);
+        self->entryText->SetText((char*)(LuISettingsMenuItems[self->mainMenu->selectedEntry].name));
+        lastSelectedSettingsEntry = self->mainMenu->selectedEntry;  // remember selection
     };
-    // update position later to clarify code
-    const int firstOffset=2;
-    mainMenu->selectedEntry=firstOffset; // don't show "back" as first option
-    paginator->current=firstOffset;
-    entryText->SetText((char*)LuISettingsMenuItems[firstOffset].name);
+    
+    // Restore last selected entry or default to first app (skip "Back" entries at 0, 1)
+    const int firstOffset = 2;
+    int selectedEntry = (lastSelectedSettingsEntry < LuISettingsMenuItemsNumber) ? lastSelectedSettingsEntry : firstOffset;
+    mainMenu->selectedEntry = selectedEntry;
+    paginator->SetCurrent(selectedEntry);
+    entryText->SetText((char*)LuISettingsMenuItems[selectedEntry].name);
+    
     AddChild(screen);
-
-    directDraw=true; // allow controls to sync itself with the screen
+    directDraw = true;  // allow controls to sync with the screen
 }
