@@ -79,8 +79,8 @@ using namespace LuI;
 const int FIRST_SETTINGS_MENU_ENTRY_INDEX = 2;
 
 const IconMenuEntry LuISettingsMenuItems[] = {
-    {"Back", img_mainmenu_watchface_bits, img_mainmenu_watchface_height, img_mainmenu_watchface_width, [](IGNORE_PARAM) { LaunchWatchface(); } },
-    {"Back", img_mainmenu_back_bits, img_mainmenu_back_height, img_mainmenu_back_width, [](IGNORE_PARAM) { LaunchApplication(new LuIMainMenuApplication()); } },
+    {"Back",                                                         img_mainmenu_watchface_bits,       img_mainmenu_watchface_height,       img_mainmenu_watchface_width,       [](IGNORE_PARAM) { LaunchWatchface(); } },
+    {"Back",                                                         img_mainmenu_back_bits,            img_mainmenu_back_height,            img_mainmenu_back_width,            [](IGNORE_PARAM) { LaunchApplication(new LuIMainMenuApplication()); } },
     MENU_APP_ENTRY("Radios",                                         img_mainmenu_wifi_bits,            img_mainmenu_wifi_height,            img_mainmenu_wifi_width,            SettingsApplication),
     MENU_APP_ENTRY("Gestures",                                       img_mainmenu_gesture_bits,         img_mainmenu_gesture_height,         img_mainmenu_gesture_width,         GestureSettings),
     MENU_APP_ENTRY("Watchface",                                      img_mainmenu_watchface_bits,       img_mainmenu_watchface_height,       img_mainmenu_watchface_width,       WatchfaceSelectorApplication),
@@ -95,7 +95,6 @@ const IconMenuEntry LuISettingsMenuItems[] = {
     MENU_APP_ENTRY("Prov",                                           img_mainmenu_provisioning_bits,    img_mainmenu_provisioning_height,    img_mainmenu_provisioning_width,    Provisioning2Application),
     MENU_APP_ENTRY("Rotation",                                       img_rotate_120_bits,               img_rotate_120_height,               img_rotate_120_width,               LuIRotateApplication),
     MENU_APP_ENTRY("Partitions",                                     img_mainmenu_partition_bits,       img_mainmenu_partition_height,       img_mainmenu_partition_width,       PartitionExplorerApplication),
-    MENU_APP_ENTRY("Bright",                                         img_mainmenu_bright_bits,          img_mainmenu_bright_height,          img_mainmenu_bright_width,          BrightnessApplication),
 };
 int LuISettingsMenuItemsNumber = sizeof(LuISettingsMenuItems) / sizeof(LuISettingsMenuItems[0])-1;
 
