@@ -67,14 +67,14 @@ extern const PROGMEM uint8_t githubPEM_end[] asm("_binary_asset_raw_githubuserco
 #define OTASTEP_ALREADYUPDATED 1
 #define OTASTEP_CONNECTING 2
 #define OTASTEP_ONLINE 3
-#define OTASTEP_CHECKING 3
-#define OTASTEP_HTTPS_ERROR 4 
-#define OTASTEP_IMAGE_ERROR 5 
-#define OTASTEP_IMAGE_DOWNLOAD 6 
-#define OTASTEP_IMAGE_DOWNLOAD_ERROR 7 
-#define OTASTEP_IMAGE_DOWNLOAD_DONE 8
+#define OTASTEP_CHECKING 4
+#define OTASTEP_HTTPS_ERROR 5 
+#define OTASTEP_IMAGE_ERROR 6 
+#define OTASTEP_IMAGE_DOWNLOAD 7 
+#define OTASTEP_IMAGE_DOWNLOAD_ERROR 8 
+#define OTASTEP_IMAGE_DOWNLOAD_DONE 9
 
-int8_t OTAStep=OTASTEP_IDLE;
+int8_t OTAStep = OTASTEP_IDLE;
 
 GraphWidget * OTADownloadSpeed=nullptr;
 long OTADownloadTimeLapse=0;
@@ -380,25 +380,40 @@ bool OTAUpdateApplication::Tick() {
         } else { sprintf(bufferForText,"awaiting data"); }
 
         const char * whatAreYouDoing="Please wait...";
-        if ( OTASTEP_NO_WIFI==OTAStep ) {
-            whatAreYouDoing="No WiFi";
-        } else if ( OTASTEP_ALREADYUPDATED==OTAStep ) {
-            whatAreYouDoing="Updated!";
-        } else if ( OTASTEP_CONNECTING==OTAStep ) {
-            whatAreYouDoing="Connecting...";
-        } else if ( OTASTEP_ONLINE==OTAStep ) {            
-            whatAreYouDoing="Online!";
-        } else if ( OTASTEP_CHECKING==OTAStep ) {            
-            whatAreYouDoing="Checking...";
-        } else if ( OTASTEP_HTTPS_ERROR==OTAStep ) {
-            whatAreYouDoing="HTTPS Error!";
-        } else if ( OTASTEP_IMAGE_DOWNLOAD==OTAStep ) {
-            whatAreYouDoing="Download";
-        } else if ( OTASTEP_IMAGE_ERROR==OTAStep ) {
-            whatAreYouDoing="Firmware Error!";
-        } else if ( OTASTEP_IMAGE_DOWNLOAD_DONE==OTAStep ) {
-            whatAreYouDoing="Done!";
+        switch(OTAStep) {
+            case OTASTEP_NO_WIFI:
+                whatAreYouDoing="No WiFi";
+                break;
+            case OTASTEP_ALREADYUPDATED:
+                whatAreYouDoing="Updated!";
+                break;
+            case OTASTEP_CONNECTING:
+                whatAreYouDoing="Connecting...";
+                break;
+            case OTASTEP_ONLINE:
+                whatAreYouDoing="Online!";
+                break;
+            case OTASTEP_CHECKING:
+                whatAreYouDoing="Checking...";
+                break;
+            case OTASTEP_HTTPS_ERROR:
+                whatAreYouDoing="HTTPS Error!";
+                break;
+            case OTASTEP_IMAGE_DOWNLOAD:
+                whatAreYouDoing="Download";
+                break;
+            case OTASTEP_IMAGE_ERROR:
+                whatAreYouDoing="Firmware Error!";
+                break;
+            case OTASTEP_IMAGE_DOWNLOAD_DONE:
+                whatAreYouDoing="Done!";
+                break;
+
+            default:
+                whatAreYouDoing = "Idle";
+                break;
         }
+
         if ( updateBtn->GetEnabled() ) {
             btnBack->DrawTo(canvas);
         } else {

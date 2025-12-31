@@ -54,10 +54,10 @@ uint8_t lastStepsDay = 8; // impossible day to force next trigger (0~6)
 
 StepsApplication::~StepsApplication() {
 
-    if ( nullptr != btnMilestone ) { delete btnMilestone; }
-    if ( nullptr != weekGraph ) { delete weekGraph; }
-    if ( nullptr != btnSetup ) { delete btnSetup; }
-    if ( nullptr != activityGraph ) { delete activityGraph; }
+    delete btnMilestone;
+    delete weekGraph;
+    delete btnSetup;
+    delete activityGraph;
 
 }
 
