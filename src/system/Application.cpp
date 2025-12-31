@@ -812,7 +812,7 @@ bool SoftwareFreehandKeyboard::Tick() {
 
     if ( millis() > nextRefresh_ ) { // redraw full canvas
         RedrawMe();
-        nextRefresh_ = millis() + (1000/8); // 8 FPS is enought for GUI
+        nextRefresh_ = millis() + FPS_8; // 8 FPS is enough for GUI
         return true;
     }
     return false;

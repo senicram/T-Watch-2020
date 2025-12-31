@@ -92,7 +92,7 @@ bool NuKeyboardApplication::Tick() {
             handDrawCanvas->DrawTo(canvas);
             //if ( false == touched ) { handDrawCanvas->canvas->fillSprite(TFT_BLACK); }
             btnBack->DrawTo(canvas); // redraw back button
-            nextRefresh=millis()+(1000/8); // 8 FPS is enought for GUI
+            nextRefresh = millis() + FPS_8; // 8 FPS is enough for GUI
             return true;
         }
     }

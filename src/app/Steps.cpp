@@ -18,6 +18,7 @@
 //
 
 #include <Arduino.h>
+#include "../lunokiot_config.hpp"
 #include <LilyGoWatch.h>
 #include "Settings.hpp"
 #include "../static/img_back_32.xbm"
@@ -279,7 +280,7 @@ bool StepsApplication::Tick() {
         else { pcValue = (correctedValue/range)*weekGraph->canvas->height(); }
         canvas->drawFastHLine(20,(weekGraph->canvas->height()+45)-pcValue,200,ThCol(high));
         
-        nextRedraw=millis()+(1000/8);
+        nextRedraw = millis() + FPS_8; // 8 FPS is enough for GUI
         return true;
     }
     return false;

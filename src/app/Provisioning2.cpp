@@ -18,6 +18,7 @@
 //
 
 #include <Arduino.h>
+#include "../lunokiot_config.hpp"
 #include <ArduinoNvs.h>
 
 #include <LilyGoWatch.h>
@@ -368,7 +369,7 @@ bool Provisioning2Application::Tick() {
         canvas->drawXBitmap(200,26,img_bluetooth_32_bits, img_bluetooth_32_width, img_bluetooth_32_height, bleColor);
         canvas->drawXBitmap(90,30,img_wifi_32_bits, img_wifi_32_width, img_wifi_32_height, wifiColor);
 
-        nextRedraw=millis()+(1000/8);
+        nextRedraw = millis() + FPS_8; // 8 FPS is enough for GUI
         return true;
     }
     return false;

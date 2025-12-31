@@ -17,6 +17,7 @@
 // LunokWatch. If not, see <https://www.gnu.org/licenses/>. 
 //
 #include "Dungeon.hpp"
+#include "../../lunokiot_config.hpp"
 
 #include "../LogView.hpp"   // for lLog functions
 #include <WiFi.h>
@@ -253,7 +254,7 @@ bool DungeonGameApplication::Tick() {
     if ( millis() > animationTimeout ) {
         dirty = true;
         //Redraw();
-        animationTimeout=millis()+(1000/8); //(renderTime*1.25);
+        animationTimeout = millis() + FPS_8; // 8 FPS is enough for GUI
     }
     if ( dirty ) {
         Redraw();

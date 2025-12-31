@@ -18,6 +18,7 @@
 //
 
 #include <Arduino.h>
+#include "../lunokiot_config.hpp"
 #include "LogView.hpp" // log capabilities
 #include "../UI/AppTemplate.hpp"
 #include "ThumbTest.hpp"
@@ -228,7 +229,7 @@ bool ThumbTest::Tick() {
     }
 
     if ( millis() > nextRefresh ) { // redraw full canvas        
-        nextRefresh=millis()+(1000/8); // 8 FPS is enought for GUI
+        nextRefresh = millis() + FPS_8; // 8 FPS is enough for GUI
         return true;
     }
     return false;

@@ -18,6 +18,7 @@
 //
 
 #include <Arduino.h>
+#include "../lunokiot_config.hpp"
 #include "LogView.hpp" // log capabilities
 #include "../UI/AppTemplate.hpp"
 #include "../system/Application.hpp"
@@ -66,7 +67,7 @@ bool TaskSwitcher::Tick() {
 
     if ( millis() > nextRefresh ) {
         dirty=true;
-        nextRefresh=millis()+(1000/8);
+        nextRefresh = millis() + FPS_8; // 8 FPS is enough for GUI
     }
     if ( dirty ) {
         if ( touched ) {

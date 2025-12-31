@@ -7,6 +7,7 @@
 //----------------------------------------------------------------
 
 #include "WatchfaceSquare.hpp"
+#include "../lunokiot_config.hpp"
 #include "../UI/UI.hpp"
 #define MARGIN_TOP 3
 #define MARGIN_LFT 2
@@ -262,7 +263,7 @@ bool WatchfaceSquare::Tick() {
           canvas->drawXBitmap(MARGIN_LFT, 205, img, img_bluetooth_24_width, img_bluetooth_24_height, ThCol(text));
         }
 
-        nextRefresh=millis()+(1000/8); // 8 FPS is enought for GUI
+        nextRefresh = millis() + FPS_8; // 8 FPS is enough for GUI
 
         return true;
     }

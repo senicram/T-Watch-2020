@@ -120,7 +120,7 @@ bool WatchfaceSelectorApplication::Tick() {
                 y+=canvas->height()/3;
             }
         }
-        nextRefresh_=millis()+(1000/8); // 8 FPS is enought for GUI
+        nextRefresh_ = millis() + FPS_8; // 8 FPS is enough for GUI
         return true;
     }
     return false;

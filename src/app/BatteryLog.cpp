@@ -18,6 +18,7 @@
 //
 
 #include <Arduino.h>
+#include "../lunokiot_config.hpp"
 #include "LogView.hpp" // log capabilities
 #include "../UI/AppTemplate.hpp"
 #include "BatteryLog.hpp"
@@ -86,7 +87,7 @@ bool BatteryLogApplication::Tick() {
         batteryGraph->DrawTo(canvas,10,10);
 
         TemplateApplication::btnBack->DrawTo(canvas);
-        nextRefresh_=millis()+(1000/8); // 8 FPS is enought for GUI
+        nextRefresh_ = millis() + FPS_8; // 8 FPS is enough for GUI
         return true;
     }
     return false;
