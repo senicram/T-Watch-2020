@@ -89,10 +89,22 @@ class LBLEServerCallbacks: public NimBLEServerCallbacks {
             lNetLog("BLE: %p LBLEServerCallbacks %p\n",bleHandler,this);
         }
 
+        /**
+         * @brief Callback triggered when a BLE client connects to the server
+         * @param pServer Pointer to the NimBLE server instance
+         * @param desc Pointer to the BLE connection descriptor with connection details
+         * 
+         * Handles client connection events by:
+         * - Logging the connection
+         * - Stopping BLE advertising
+         * - Launching Bluetooth application if one is not already running
+         */
         void onConnect(NimBLEServer* pServer, ble_gap_conn_desc* desc) {
-            lNetLog("BLE: %p LBLEServerCallbacks: Client connect \n",bleHandler,this);
+            lNetLog("BLE: %p LBLEServerCallbacks: Client connect\n",bleHandler,this);
             bleHandler->StopAdvertising();
+
             if ( nullptr != currentApplication ) {
+                lNetLog("BLE: %p LBLEServerCallbacks: nullptr != currentApplication\n",bleHandler,this);
                 if ( 0 != strcmp(currentApplication->AppName(),"BLE pairing")) {
                     if ( ttgo->bl->isOn()) {
                         LaunchApplication(new BluetoothApplication());
@@ -100,19 +112,51 @@ class LBLEServerCallbacks: public NimBLEServerCallbacks {
                 }
             }
         }
+        /**
+         * @brief Callback triggered when a BLE client disconnects from the server
+         * @param pServer Pointer to the NimBLE server instance
+         * @param desc Pointer to the BLE connection descriptor
+         * 
+         * Handles client disconnection by:
+         * - Logging the disconnection event
+         * - Resuming BLE advertising to accept new connections
+         */
         void onDisconnect(NimBLEServer* pServer, ble_gap_conn_desc* desc) {
             lNetLog("BLE: %p LBLEServerCallbacks: Client disconnect \n",bleHandler,this);
             //deviceConnected = false;
             bleHandler->StartAdvertising();
         }
+        /**
+         * @brief Callback triggered when the MTU (Maximum Transmission Unit) is negotiated with a client
+         * @param MTU The newly negotiated MTU size in bytes
+         * @param desc Pointer to the BLE connection descriptor
+         * 
+         * Logs the MTU change event. MTU affects the maximum payload size per BLE packet.
+         */
         void onMTUChange(uint16_t MTU, ble_gap_conn_desc* desc) {
             lNetLog("BLE: %p LBLEServerCallbacks: MTU changed to: %u\n",bleHandler,this,MTU);
         }
+        /**
+         * @brief Callback triggered when the server needs to provide a passkey for pairing
+         * @return The 6-digit passkey used for secure pairing
+         * 
+         * Returns the security passkey stored in the BLE device configuration.
+         * Used during the pairing process for numeric comparison or keyboard entry.
+         */
         uint32_t onPassKeyRequest() {
             uint32_t pass = BLEDevice::getSecurityPasskey();
             lNetLog("BLE: %p LBLEServerCallbacks: Password request: %04u\n",bleHandler,this,pass);
             return BLEDevice::getSecurityPasskey();
         }
+        /**
+         * @brief Callback triggered when BLE pairing/authentication is successfully completed
+         * @param desc Pointer to the BLE connection descriptor
+         * 
+         * After successful authentication:
+         * - Logs the completion event
+         * - Dismisses BLE pairing application if active
+         * - Returns to watchface display
+         */
         void onAuthenticationComplete(ble_gap_conn_desc* desc) {
             lNetLog("BLE: %p LBLEServerCallbacks: Authentication complete\n",bleHandler,this);
             if ( nullptr != currentApplication ) {
@@ -123,6 +167,14 @@ class LBLEServerCallbacks: public NimBLEServerCallbacks {
                 }
             }
         }
+        /**
+         * @brief Callback to verify PIN confirmation during secure BLE pairing
+         * @param pin The PIN provided by the remote device to confirm
+         * @return true if PIN matches the expected passkey, false otherwise
+         * 
+         * Validates that the PIN from the remote device matches the local passkey.
+         * Used for numeric comparison confirmation during pairing.
+         */
         bool onConfirmPIN(uint32_t pin) {
             uint32_t pass = BLEDevice::getSecurityPasskey();
             lNetLog("BLE: %p LBLEServerCallbacks: PIN confirmation: %04u ",bleHandler,this,pass);
@@ -137,6 +189,17 @@ class LBLEServerCallbacks: public NimBLEServerCallbacks {
 
 // advertiser callbacks
 class LBLEAdvertisedDeviceCallbacks: public BLEAdvertisedDeviceCallbacks {
+    /**
+     * @brief Callback triggered when a BLE advertisement is discovered during scanning
+     * @param advertisedDevice Pointer to the discovered BLE device
+     * 
+     * Processes discovered BLE devices:
+     * - Checks if device is already known
+     * - Updates device metrics (RSSI, TX power, distance)
+     * - Adds new devices to the known device list
+     * - Updates location zone information
+     * - Stores device data in the database
+     */
     void onResult(BLEAdvertisedDevice* advertisedDevice) {
         bool alreadyKnown = false;
         int FinalZone=-1;
@@ -152,6 +215,7 @@ class LBLEAdvertisedDeviceCallbacks: public BLEAdvertisedDeviceCallbacks {
                                             dev->seenCount,dev->locationGroup);
                     dev->lastSeen = millis();
                     dev->seenCount++;
+                    
                     if ( advertisedDevice->haveRSSI() ) {
                         dev->rssi = advertisedDevice->getRSSI();
                     }
@@ -164,7 +228,10 @@ class LBLEAdvertisedDeviceCallbacks: public BLEAdvertisedDeviceCallbacks {
                         dev->distance = 10 ^((dev->txPower-dev->rssi)/(10* 2));
                         //lNetLog("BLE: DEBUG Device DISTANCE: %f\n",dev->distance);
                     }
-                    if ( BLEZoneLocations::UNKNOWN != dev->locationGroup ) { FinalZone=dev->locationGroup; }
+                    
+                    if ( BLEZoneLocations::UNKNOWN != dev->locationGroup ) {
+                        FinalZone = dev->locationGroup;
+                    }
                     alreadyKnown=true;
                     SqlUpdateBluetoothDevice(dev->addr.toString().c_str(),dev->distance,dev->locationGroup);
                     break;
@@ -172,6 +239,7 @@ class LBLEAdvertisedDeviceCallbacks: public BLEAdvertisedDeviceCallbacks {
             }
             xSemaphoreGive( BLEKnowDevicesSemaphore );
         }
+
         if ( alreadyKnown ) {
             if ( -1 == FinalZone ) { // not found
                 //lNetLog("BLE zone not found\n");
@@ -219,6 +287,17 @@ class LBLEUARTCallbacks: public NimBLECharacteristicCallbacks {
     //void onRead(NimBLECharacteristic* pCharacteristic) {
     //    lNetLog("BLE: UART: onREAD\n");
     //}
+    /**
+     * @brief Callback triggered when data is received on the BLE UART RX characteristic
+     * @param pCharacteristic Pointer to the characteristic that received the data
+     * 
+     * Handles incoming UART data over BLE:
+     * - Parses Gadgetbridge protocol commands (GB protocol)
+     * - Parses BangleJS protocol commands (setTime, etc.)
+     * - Buffers multi-packet commands
+     * - Queues completed commands for asynchronous processing
+     * - Logs unrecognized messages for debugging
+     */
     void onWrite(BLECharacteristic *pCharacteristic) {
         std::string rxValue = pCharacteristic->getValue();
         const char * receivedData = rxValue.c_str();
@@ -326,18 +405,32 @@ class LBLEUARTCallbacks: public NimBLECharacteristicCallbacks {
     }
 };
 
+/**
+ * @brief Check if BLE scanning is currently active
+ * @return true if BLE device is actively scanning for nearby devices, false otherwise
+ */
 bool LoTBLE::IsScanning() {
     NimBLEScan * scan = NimBLEDevice::getScan();
     if ( nullptr == scan ) { return false; }
     return scan->isScanning();
 }
 
+/**
+ * @brief Check if BLE advertising is currently active
+ * @return true if BLE server is advertising its presence, false otherwise
+ */
 bool LoTBLE::IsAdvertising() {
     NimBLEAdvertising * adv = NimBLEDevice::getAdvertising();
     if ( nullptr == adv ) { return false; }
     return adv->isAdvertising();
 }
 
+/**
+ * @brief Start BLE advertising to make the watch discoverable
+ * 
+ * Enables BLE advertising so nearby devices can find and connect to the watch.
+ * Safe to call even if already advertising (no-op if already active).
+ */
 void LoTBLE::StartAdvertising() {
     NimBLEAdvertising * adv = NimBLEDevice::getAdvertising();
     if ( nullptr == adv ) { return; }
@@ -347,6 +440,12 @@ void LoTBLE::StartAdvertising() {
     }
 }
 
+/**
+ * @brief Stop BLE advertising to make the watch undiscoverable
+ * 
+ * Disables BLE advertising. Connected devices remain connected.
+ * Safe to call even if not advertising (no-op if not active).
+ */
 void LoTBLE::StopAdvertising() {
     NimBLEAdvertising * adv = NimBLEDevice::getAdvertising();
     if ( nullptr == adv ) { return; }
@@ -356,6 +455,10 @@ void LoTBLE::StopAdvertising() {
     }
 }
 
+/**
+ * @brief Get the number of currently connected BLE clients
+ * @return Number of active BLE connections (typically 0 or 1)
+ */
 size_t LoTBLE::Clients() {
     NimBLEServer * pServer = NimBLEDevice::getServer();
     if ( nullptr == pServer ) { return 0; }
@@ -364,6 +467,14 @@ size_t LoTBLE::Clients() {
 
 }
 
+/**
+ * @brief Save all known BLE devices to the database
+ * 
+ * Persists BLE device information (address, distance, location zone) to database.
+ * Only saves devices with a known location zone (not UNKNOWN).
+ * Clears the known devices list after successful database synchronization.
+ * Thread-safe using semaphore locking.
+ */
 void SaveBLEDevicesToDB() {
     if( xSemaphoreTake( BLEKnowDevicesSemaphore, LUNOKIOT_EVENT_IMPORTANT_TIME_TICKS) == pdTRUE )  {
         BLEKnowDevices.remove_if([](lBLEDevice *dev){
@@ -379,6 +490,19 @@ void SaveBLEDevicesToDB() {
     }
 }
 
+/**
+ * @brief Main BLE service loop task (runs on dedicated FreeRTOS task)
+ * 
+ * Core BLE functionality running in a separate task:
+ * - Initializes NimBLE device, security, and GATT services
+ * - Manages UART, Battery, and LunokIoT services
+ * - Handles advertising and scanning cycles
+ * - Processes location-based device scanning
+ * - Parses incoming Gadgetbridge and BangleJS commands
+ * - Updates device database with discovered peers
+ * - Monitors user settings and system events
+ * - Thread-safe operations using FreeRTOS primitives
+ */
 void LoTBLE::_BLELoopTask() {
     esp_task_wdt_delete(NULL);
     xSemaphoreTake( taskLock, LUNOKIOT_EVENT_MANDATORY_TIME_TICKS);
@@ -569,6 +693,13 @@ void LoTBLE::_BLELoopTask() {
     xSemaphoreGive( taskLock );
 }
 
+/**
+ * @brief Attempt to gracefully stop the BLE service if user settings allow
+ * 
+ * Checks if BLE is enabled via user settings and stops the task if disabled.
+ * Safe to call multiple times (will no-op if task not running).
+ * Waits for BLE loop task to terminate cleanly.
+ */
 void LoTBLE::_TryStopTask() {
     // if user whants BLE, don't do nothing
     bool enabled = NVS.getInt("BLEEnabled");
@@ -586,6 +717,15 @@ void LoTBLE::_TryStopTask() {
     }
 }
 
+/**
+ * @brief Attempt to launch the BLE service task if user settings allow
+ * 
+ * Checks user settings and launches BLE loop task on the NIMBLE core if:
+ * - BLE is enabled in user preferences
+ * - Task is not already running
+ * 
+ * Uses FreeRTOS xTaskCreatePinnedToCore for core-specific execution.
+ */
 void LoTBLE::_TryLaunchTask() {
     // check if user wants me
     xSemaphoreTake( taskLock, LUNOKIOT_EVENT_MANDATORY_TIME_TICKS);
@@ -613,6 +753,16 @@ void LoTBLE::_TryLaunchTask() {
     }
 }
 
+/**
+ * @brief Constructor - Initializes the BLE service handler
+ * 
+ * Initialization steps:
+ * - Sets up system event callbacks for wake/sleep
+ * - Generates device name from MAC address (lunokIoT_XXYY format)
+ * - Reads BLE enabled state from NVS (non-volatile storage)
+ * - Launches BLE task if enabled in user settings
+ * - Logs initialization details
+ */
 LoTBLE::LoTBLE() {
     BLEWStartEvent = new EventKVO([&](){ _TryLaunchTask(); },SYSTEM_EVENT_WAKE);
     BLEWStopEvent = new EventKVO([&](){ _TryStopTask(); },SYSTEM_EVENT_STOP);
@@ -635,6 +785,15 @@ LoTBLE::LoTBLE() {
 
 }
 
+/**
+ * @brief Destructor - Safely shuts down the BLE service
+ * 
+ * Cleanup steps:
+ * - Deregisters system event callbacks
+ * - Gracefully stops BLE loop task
+ * - Waits for task termination
+ * - Cleans up allocated resources
+ */
 LoTBLE::~LoTBLE() {
     delete BLEWStartEvent;
     BLEWStartEvent=nullptr;
@@ -656,6 +815,12 @@ LoTBLE::~LoTBLE() {
 }
 
 
+/**
+ * @brief Enable BLE functionality
+ * 
+ * Sets the enabled flag and logs the state change.
+ * Thread-safe using semaphore locking.
+ */
 void LoTBLE::Enable() {
     xSemaphoreTake( taskLock, LUNOKIOT_EVENT_MANDATORY_TIME_TICKS);
     enabled=true;
@@ -663,6 +828,12 @@ void LoTBLE::Enable() {
     xSemaphoreGive( taskLock );
 }
 
+/**
+ * @brief Disable BLE functionality
+ * 
+ * Clears the enabled flag and logs the state change.
+ * Thread-safe using semaphore locking.
+ */
 void LoTBLE::Disable() {
     xSemaphoreTake( taskLock, LUNOKIOT_EVENT_MANDATORY_TIME_TICKS);
     enabled=false;
@@ -670,6 +841,12 @@ void LoTBLE::Disable() {
     xSemaphoreGive( taskLock );
 }
 
+/**
+ * @brief Check if BLE is enabled in user settings
+ * @return true if BLE functionality is enabled, false otherwise
+ * 
+ * Thread-safe query of the enabled state.
+ */
 bool LoTBLE::IsEnabled() {
     bool response;
     xSemaphoreTake( taskLock, LUNOKIOT_EVENT_MANDATORY_TIME_TICKS);
@@ -678,6 +855,12 @@ bool LoTBLE::IsEnabled() {
     return response;
 }
 
+/**
+ * @brief Check if BLE service task is currently running
+ * @return true if BLE loop task is active, false otherwise
+ * 
+ * Thread-safe query of the running state.
+ */
 bool LoTBLE::InUse() {
     bool response;
     xSemaphoreTake( taskLock, LUNOKIOT_EVENT_MANDATORY_TIME_TICKS);
@@ -695,6 +878,20 @@ bool LoTBLE::InUse() {
 
 
 
+/**
+ * @brief Send data over BLE UART to connected client
+ * @param data Null-terminated string to transmit
+ * @return true if successfully queued for transmission, false on error
+ * 
+ * Transmission details:
+ * - Checks for active client connections
+ * - Respects MTU (Maximum Transmission Unit) size
+ * - Splits large messages into multiple chunks
+ * - Includes 40ms delay between chunks for reliability
+ * - Appends newline terminator
+ * 
+ * @note Will fail if no clients are connected or UART characteristic unavailable
+ */
 bool LoTBLE::BLESendUART(const char * data) {
     if ( 0 == Clients() ) {
         lNetLog("BLE: ERROR: Unable to send UART data, no client connected\n");
@@ -731,6 +928,11 @@ bool LoTBLE::BLESendUART(const char * data) {
 
 
 
+/**
+ * @brief Destructor - Cleans up BLE device instance
+ * 
+ * Frees allocated device name string and logs destruction.
+ */
 lBLEDevice::~lBLEDevice() {
     if ( nullptr != devName ) {
         free(devName);

@@ -84,16 +84,16 @@ enum BLEZoneLocations {
 // represent BLE remote devices
 class lBLEDevice {
     public:
-        NimBLEAddress addr;
-        char * devName = nullptr;
-        unsigned long firstSeen = 0; // @TODO use time_t instead
-        unsigned long lastSeen = 0;
-        size_t seenCount = 0;
-        int rssi = 0;
-        int8_t txPower = 0;
-        double distance = -1;
-        bool dbSync=false;
-        int locationGroup=BLEZoneLocations::UNKNOWN;
+        NimBLEAddress   addr;
+        char *          devName             = nullptr;
+        unsigned long   firstSeen           = 0;             // @TODO use time_t instead
+        unsigned long   lastSeen            = 0;
+        size_t          seenCount           = 0;
+        int             rssi                = 0;
+        int8_t          txPower             = 0;
+        double          distance            = -1;
+        bool            dbSync              = false;
+        int             locationGroup       = BLEZoneLocations::UNKNOWN;
         ~lBLEDevice();
 };
 
@@ -118,32 +118,33 @@ class LoTBLE {
     friend LBLEUARTCallbacks;
     friend LBLEServerCallbacks;
     private:
-        const float GraceTimeSeconds = 9;
-        SemaphoreHandle_t taskLock = xSemaphoreCreateMutex();
-        void _BLELoopTask();
-        TaskHandle_t BLELoopTaskHandler=NULL;
-        const unsigned long UserSettingsCheckMS=10*1000;
-        const unsigned long LocationCheckMS=80*1000;
+        // Type                              Name                           Value
+        const float                         GraceTimeSeconds               = 9;
+        SemaphoreHandle_t                   taskLock                       = xSemaphoreCreateMutex();
+        void                                _BLELoopTask();
+        TaskHandle_t                        BLELoopTaskHandler             = NULL;
+        const unsigned long                 UserSettingsCheckMS            = 10*1000;
+        const unsigned long                 LocationCheckMS                = 80*1000;
 
-        void _TryLaunchTask();
-        void _TryStopTask();
-        EventKVO * BLEWStartEvent = nullptr; 
-        EventKVO * BLEWStopEvent = nullptr; 
-        bool enabled=false;
-        bool running=false;
-        BLEService *pServiceUART = nullptr;
-        NimBLECharacteristic * pRxCharacteristic = nullptr;
-        NimBLECharacteristic * pTxCharacteristic = nullptr;
+        void                                _TryLaunchTask();
+        void                                _TryStopTask();
+        EventKVO *                          BLEWStartEvent                 = nullptr;
+        EventKVO *                          BLEWStopEvent                  = nullptr;
+        bool                                enabled                        = false;
+        bool                                running                        = false;
+        BLEService *                        pServiceUART                   = nullptr;
+        NimBLECharacteristic *              pRxCharacteristic              = nullptr;
+        NimBLECharacteristic *              pTxCharacteristic              = nullptr;
 
-        EventKVO * battPercentPublish = nullptr; 
-        BLEService *pServiceBattery = nullptr;
-        NimBLECharacteristic * BatteryCharacteristic = nullptr;
+        EventKVO *                          battPercentPublish             = nullptr;
+        BLEService *                        pServiceBattery                = nullptr;
+        NimBLECharacteristic *              BatteryCharacteristic          = nullptr;
         // gadgetbridge integration
         // used to nofity when new message is ready for parsing
-        bool BLEGadgetbridgeCommandPending = false;
-        bool BLEBangleJSCommandPending = false;
-        char *gadgetBridgeBuffer=nullptr;
-        size_t gadgetBridgeBufferOffset=0;
+        bool                                BLEGadgetbridgeCommandPending  = false;
+        bool                                BLEBangleJSCommandPending      = false;
+        char *                              gadgetBridgeBuffer             = nullptr;
+        size_t                              gadgetBridgeBufferOffset       = 0;
         SemaphoreHandle_t BLEGadgetbridge = xSemaphoreCreateMutex(); // locked during UP/DOWN BLE service
     public:
         char BTName[15] = { 0 }; // buffer for build the name like: "lunokIoT_69fa"
