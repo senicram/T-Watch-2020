@@ -44,13 +44,13 @@ bool ApplicationBase::Tick() {
     // put your interacts here:
     //mywidget->Interact(touched,touchX,touchY);
 
-    if ( millis() > nextRefresh ) { // redraw full canvas
+    if ( millis() > nextRefresh_ ) { // redraw full canvas
         canvas->fillSprite(ThCol(background)); // use theme colors
         TemplateApplication::Tick();
         // draw your interface widgets here!!!
         //mywidget->DrawTo(canvas);
 
-        nextRefresh=millis()+(1000/8); // 8 FPS is enought for GUI
+        nextRefresh_=millis()+(1000/8); // 8 FPS is enought for GUI
         return true;
     }
     return false;

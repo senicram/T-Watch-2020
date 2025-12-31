@@ -66,6 +66,7 @@ bool BluetoothApplication::Tick() {
     btnBack->Interact(touched,touchX, touchY);
     btnGeneratePIN->Interact(touched,touchX, touchY);
     btnRemoveBonding->Interact(touched,touchX, touchY);
+    
     if (millis() > nextRedraw ) {
         canvas->fillSprite(ThCol(background));
         btnBack->DrawTo(canvas);

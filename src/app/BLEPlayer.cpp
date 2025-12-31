@@ -271,7 +271,7 @@ bool BLEPlayerApplication::Tick() {
     playBtn->Interact(touched,touchX,touchY);
     pauseBtn->Interact(touched,touchX,touchY);
 
-    if ( millis() > nextRefresh ) { // redraw full canvas
+    if ( millis() > nextRefresh_ ) { // redraw full canvas
         canvas->fillSprite(ThCol(background)); // use theme colors
         TemplateApplication::Tick();
 
@@ -444,7 +444,7 @@ bool BLEPlayerApplication::Tick() {
         if ( playBtn->GetEnabled() ) { playBtn->DrawTo(canvas); }
         if ( pauseBtn->GetEnabled() ) { pauseBtn->DrawTo(canvas); }
 
-        nextRefresh=millis()+(1000/8); // 8 FPS is enought for GUI
+        nextRefresh_=millis()+(1000/8); // 8 FPS is enought for GUI
         return true;
     }
     return false;

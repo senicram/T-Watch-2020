@@ -25,7 +25,7 @@
 
 class TemplateApplication: public LunokIoTApplication {
     protected:
-        unsigned long nextRefresh=0;
+        unsigned long nextRefresh_ = 0;
         ButtonImageXBMWidget * btnBack = nullptr;
     public:
         const char *AppName() override { return "AppTemplate without name"; };

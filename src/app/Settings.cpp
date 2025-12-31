@@ -146,7 +146,7 @@ bool SettingsApplication::Tick() {
     if ( ntpBLECheck->Interact(touched,touchX, touchY)) { mustRedraw=true; }
 
 
-    if (millis() > nextRefresh ) {
+    if (millis() > nextRefresh_ ) {
         canvas->fillSprite(ThCol(background));
         TemplateApplication::btnBack->DrawTo(canvas);
 
@@ -182,7 +182,7 @@ bool SettingsApplication::Tick() {
         canvas->setTextColor(textColor);
         canvas->drawString("NTP-BLE",ntpBLECheck->GetX()+ntpBLECheck->GetW()+15,ntpBLECheck->GetY()+(ntpBLECheck->GetH()/2));
 
-        nextRefresh=millis()+(1000/6);
+        nextRefresh_ = millis()+(1000/6);
         return true;
     }
     return mustRedraw;

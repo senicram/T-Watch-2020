@@ -70,7 +70,7 @@ bool BrightnessApplication::Tick() {
         return false;
     }
     TemplateApplication::Tick();
-    if (millis() > nextRefresh ) {
+    if (millis() > nextRefresh_ ) {
         canvas->fillSprite(ThCol(background));
         // sun in the center
         canvas->drawXBitmap((TFT_WIDTH/2)-(img_bright_48_width/2),
@@ -81,7 +81,7 @@ bool BrightnessApplication::Tick() {
                     TFT_WHITE);
         brightGauge->DrawTo(canvas);
         btnBack->DrawTo(canvas);
-        nextRefresh=millis()+(1000/3);
+        nextRefresh_=millis()+(1000/3);
         return true;
     }
     return false;

@@ -81,7 +81,7 @@ bool WatchfaceSelectorApplication::Tick() {
         }
     }
 
-    if ( millis() > nextRefresh ) { // redraw full canvas
+    if ( millis() > nextRefresh_ ) { // redraw full canvas
         canvas->fillSprite(ThCol(background)); // use theme colors
         TemplateApplication::btnBack->DrawTo(canvas);
         
@@ -120,7 +120,7 @@ bool WatchfaceSelectorApplication::Tick() {
                 y+=canvas->height()/3;
             }
         }
-        nextRefresh=millis()+(1000/8); // 8 FPS is enought for GUI
+        nextRefresh_=millis()+(1000/8); // 8 FPS is enought for GUI
         return true;
     }
     return false;

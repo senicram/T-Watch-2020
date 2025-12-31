@@ -111,8 +111,8 @@ void LunoNoidGameApplication::GatherButtons() {
 }
 
 bool LunoNoidGameApplication::Tick() {
-    if ( millis() < nextRefresh ) { return false; }
-    nextRefresh=millis()+(1000/24);
+    if ( millis() < nextRefresh_ ) { return false; }
+    nextRefresh_=millis()+(1000/24);
     UINextTimeout = millis() + UITimeout; // disable screen timeout on this app
     char buffer[255];
     GatherButtons();

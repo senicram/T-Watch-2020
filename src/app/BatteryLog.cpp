@@ -81,12 +81,12 @@ BatteryLogApplication::~BatteryLogApplication() {
 bool BatteryLogApplication::Tick() {
     TemplateApplication::btnBack->Interact(touched,touchX,touchY);
 
-    if ( millis() > nextRefresh ) { // redraw full canvas
+    if ( millis() > nextRefresh_ ) { // redraw full canvas
         canvas->fillSprite(ThCol(background)); // use theme colors
         batteryGraph->DrawTo(canvas,10,10);
 
         TemplateApplication::btnBack->DrawTo(canvas);
-        nextRefresh=millis()+(1000/8); // 8 FPS is enought for GUI
+        nextRefresh_=millis()+(1000/8); // 8 FPS is enought for GUI
         return true;
     }
     return false;

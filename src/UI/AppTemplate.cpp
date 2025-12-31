@@ -43,7 +43,7 @@ bool TemplateApplication::Tick() {
     if ( backTap ) {
         btnBack->DirectDraw();
     } else {
-    //if ( millis() > nextRefresh ) {
+    //if ( millis() > nextRefresh_ ) {
         btnBack->DrawTo(canvas);
     }
     return backTap;

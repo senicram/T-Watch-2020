@@ -124,6 +124,7 @@ bool BLEMonitorApplication::Tick() {
         canvas->fillCircle(120, 120, 30, TFT_BLACK);
         canvas->fillCircle(120, 120, 28, TFT_WHITE);
         canvas->fillCircle(120, 120, 24, TFT_BLUE);
+        
         uint16_t iconColor = TFT_WHITE;
         if ( false == LoT().GetBLE()->IsEnabled() ) { iconColor = TFT_DARKGREY; }
         canvas->drawXBitmap((TFT_WIDTH - img_bluetooth_32_width) / 2, (TFT_HEIGHT - img_bluetooth_32_height) / 2, img_bluetooth_32_bits, img_bluetooth_32_width, img_bluetooth_32_height, iconColor);

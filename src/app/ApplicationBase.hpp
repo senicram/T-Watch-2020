@@ -24,7 +24,7 @@
 
 class ApplicationBase : public TemplateApplication {
     private:
-        unsigned long nextRefresh=0;
+        unsigned long nextRefresh_=0;
     public:
         const char *AppName() override { return "MUST BE SET"; };
         ApplicationBase();

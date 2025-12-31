@@ -43,9 +43,9 @@ const uint8_t APPLICATIONCORE=UICORE;
  */
 class LunokIoTApplication {
     public:
-        bool dirty=false;
-        TFT_eSprite *canvas; // application buffer (all must draw here)
-        std::function<void(void*)> backCallback = nullptr;  // callback to previous screen
+        bool                         dirty                    = false;                      // application dirty flag
+        TFT_eSprite *                canvas;                  // application buffer (all must draw here)
+        std::function<void(void*)>   backCallback             = nullptr;                    // callback to previous screen
         // build canvas
         LunokIoTApplication();
         virtual ~LunokIoTApplication();
@@ -65,8 +65,8 @@ typedef std::function<LunokIoTApplication*()> RunApplicationCallback;
 
 class LaunchApplicationDescriptor {
     public:
-        LunokIoTApplication *instance;
-        bool animation;
+        LunokIoTApplication *   instance              = nullptr;  // application instance pointer
+        bool                    animation             = false;    // enable launch animation
 };
 
 /*
@@ -98,32 +98,33 @@ enum lUIKeyboardType {
 // base keyboard class
 class SoftwareKeyboard : public LunokIoTApplication {
     public:
-        char *textEntry=nullptr;
+        char *                      textEntry             = nullptr;  // text entry buffer
+        void *                      destinationWidget     = nullptr;  // target widget pointer
+        
         const bool mustShowAsTask() final { return false; }
         SoftwareKeyboard(void * destinationWidget=nullptr);
         ~SoftwareKeyboard();
-        void * destinationWidget=nullptr;
 };
 
 class SoftwareNumericKeyboard : public SoftwareKeyboard {
     public:
-        uint8_t cursorBlinkStep=0;
-        ButtonTextWidget * seven=nullptr;
-        ButtonTextWidget * eight=nullptr;
-        ButtonTextWidget * nine=nullptr;
-        ButtonTextWidget * four=nullptr;
-        ButtonTextWidget * five=nullptr;
-        ButtonTextWidget * six=nullptr;
-        ButtonTextWidget * one=nullptr;
-        ButtonTextWidget * two=nullptr;
-        ButtonTextWidget * three=nullptr;
-        ButtonTextWidget * zero=nullptr;
-        bool dotAdded=false;
-        ButtonTextWidget * dotBtn=nullptr;
+        uint8_t                 cursorBlinkStep       = 0;         // cursor blink animation step
+        ButtonTextWidget *      seven                 = nullptr;   // button '7'
+        ButtonTextWidget *      eight                 = nullptr;   // button '8'
+        ButtonTextWidget *      nine                  = nullptr;   // button '9'
+        ButtonTextWidget *      four                  = nullptr;   // button '4'
+        ButtonTextWidget *      five                  = nullptr;   // button '5'
+        ButtonTextWidget *      six                   = nullptr;   // button '6'
+        ButtonTextWidget *      one                   = nullptr;   // button '1'
+        ButtonTextWidget *      two                   = nullptr;   // button '2'
+        ButtonTextWidget *      three                 = nullptr;   // button '3'
+        ButtonTextWidget *      zero                  = nullptr;   // button '0'
+        bool                    dotAdded              = false;     // decimal point added flag
+        ButtonTextWidget *      dotBtn                = nullptr;   // decimal point button
 
-        ButtonImageXBMWidget * btnCancel=nullptr;
-        ButtonImageXBMWidget * btnDiscard=nullptr;
-        ButtonImageXBMWidget * btnSend=nullptr;
+        ButtonImageXBMWidget *  btnCancel             = nullptr;   // cancel button
+        ButtonImageXBMWidget *  btnDiscard            = nullptr;   // discard button
+        ButtonImageXBMWidget *  btnSend               = nullptr;   // send/confirm button
         //TFT_eSprite * destinationCanvas=nullptr;
         SoftwareNumericKeyboard(void * destinationWidget=nullptr );
         ~SoftwareNumericKeyboard();
@@ -142,18 +143,18 @@ class SoftwareFreehandKeyboard : public SoftwareKeyboard {
         const char *AppName() override { return "Software freehand keyboard"; }
         Perceptron **perceptrons;
     private:
-        unsigned long nextRefresh=0;
-        unsigned long oneSecond=0; // trigger clear pad
-        int16_t boxX=TFT_WIDTH; // get the box of draw
-        int16_t boxY=TFT_HEIGHT;
-        int16_t boxH=0;
-        int16_t boxW=0;
-        bool triggered=false; // to launch the recognizer
-        TFT_eSprite * perceptronCanvas=nullptr;
-        TFT_eSprite * freeHandCanvas=nullptr;
+        unsigned long           nextRefresh_           = 0;                            // refresh timer
+        unsigned long           oneSecond              = 0;                            // trigger clear pad
+        int16_t                 boxX                   = TFT_WIDTH;                    // draw box X coordinate
+        int16_t                 boxY                   = TFT_HEIGHT;                   // draw box Y coordinate
+        int16_t                 boxH                   = 0;                            // draw box height
+        int16_t                 boxW                   = 0;                            // draw box width
+        bool                    triggered              = false;                        // launch recognizer flag
+        TFT_eSprite *           perceptronCanvas       = nullptr;                      // perceptron rendering canvas
+        TFT_eSprite *           freeHandCanvas         = nullptr;                      // freehand drawing canvas
 
-        const uint8_t PerceptronMatrixSize=11;
-        const int16_t MINIMALDRAWSIZE=PerceptronMatrixSize*4;
+        const uint8_t           PerceptronMatrixSize   = 11;                           // perceptron matrix size
+        const int16_t           MINIMALDRAWSIZE        = PerceptronMatrixSize*4;       // minimum drawable size
         void Cleanup();
         void RedrawMe();
         void RemovePerceptron(Perceptron * item);

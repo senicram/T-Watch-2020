@@ -25,7 +25,7 @@
 
 class WatchfaceSelectorApplication : public TemplateApplication {
     private:
-        unsigned long nextRefresh=0;
+        unsigned long nextRefresh_ = 0;
         TFT_eSprite ** watchfaceCapture=nullptr;
         size_t watchfacesCaptures=0;
         SwitchWidget * SwitchUseOnAlwaysOn=nullptr;
