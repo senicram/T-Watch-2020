@@ -252,7 +252,7 @@ bool WatchfaceDotApplication::Tick() {
                 canvas->fillCircle((x*2)+1,(y*2)+1,1,color);
             }
         }
-        nextRefresh=millis()+(1000/12);
+        nextRefresh = millis() + FPS_12;
         return true;
     }
     return false;

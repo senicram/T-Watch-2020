@@ -172,7 +172,7 @@ bool BatteryApplication::Tick() {
             }
         }
         TemplateApplication::btnBack->DrawTo(canvas);
-        nextRedraw=millis()+(1000/3);
+        nextRedraw = millis() + FPS_3;
         return true;
     }
     return false;

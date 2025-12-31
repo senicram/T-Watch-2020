@@ -67,7 +67,7 @@ bool WatchfaceAlwaysOn::Tick() {
         canvas->setTextColor(TFT_WHITE);
         canvas->drawString(buffer, TFT_WIDTH/2, TFT_HEIGHT/2);
 
-        nextRefresh=millis()+(1000/1);
+        nextRefresh = millis() + FPS_1;
         return true;
     }
     return false;

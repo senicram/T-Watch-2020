@@ -66,7 +66,7 @@ bool BluetoothApplication::Tick() {
     btnBack->Interact(touched,touchX, touchY);
     btnGeneratePIN->Interact(touched,touchX, touchY);
     btnRemoveBonding->Interact(touched,touchX, touchY);
-    
+
     if (millis() > nextRedraw ) {
         canvas->fillSprite(ThCol(background));
         btnBack->DrawTo(canvas);
@@ -89,7 +89,7 @@ bool BluetoothApplication::Tick() {
             canvas->drawString("DISABLED",TFT_WIDTH/2,TFT_HEIGHT/2);
         }
 
-        nextRedraw=millis()+(1000/10);
+        nextRedraw = millis() + FPS_10;
         return true;
     }
     return false;

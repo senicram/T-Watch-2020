@@ -440,7 +440,7 @@ bool OTAUpdateApplication::Tick() {
             canvas->drawString(percentAsString,canvas->width()/2, (canvas->height()/2)-10);
 
         }
-        nextRefresh=millis()+(1000/6);
+        nextRefresh = millis() + FPS_6;
         return true;
     }
     return false;

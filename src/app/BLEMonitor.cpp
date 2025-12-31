@@ -213,7 +213,7 @@ bool BLEMonitorApplication::Tick() {
                 nullptr);
         }
         TemplateApplication::Tick();
-        nextRedraw = millis() + (1000 / 18);
+        nextRedraw = millis() + FPS_18;
         return true;
     }
     return false;

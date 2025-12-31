@@ -67,7 +67,7 @@ bool AdvancedSettingsApplication::Tick() {
         btnErase->DrawTo(canvas);
         btnEraseSPIFFS->DrawTo(canvas);
         btnLog->DrawTo(canvas);
-        nextRedraw=millis()+(1000/10);
+        nextRedraw = millis() + FPS_10;
         return true;
     }
     return false;

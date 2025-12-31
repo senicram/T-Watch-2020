@@ -144,7 +144,7 @@ bool IATestApplication::Tick() {
         
         // clockSphere->canvas->fillRect(testButton[0]->x-20,testButton[0]->y-20,45+40,45+40,MYTRANSPARENT);
 
-        nextRedraw = millis()+(1000/3);
+        nextRedraw = millis() + FPS_3;
     }
 
     testButton[0]->Interact(touched,touchX,touchY);
@@ -206,7 +206,7 @@ bool IATestApplication::Tick() {
         accelSphereAngle++;
         accelSphereAngle = accelSphereAngle % 360;
 */
-        assistantRedraw = millis()+(1000/10);
+        assistantRedraw = millis()+FPS_10;
         return true;
     }
 

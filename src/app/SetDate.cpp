@@ -95,7 +95,7 @@ bool SetDateApplication::Tick() {
         canvas->drawString("Day",20, 10);
         canvas->setTextDatum(TR_DATUM);
         canvas->drawString("Month",TFT_WIDTH-20,10);
-        nextRedraw=millis()+(1000/4);
+        nextRedraw = millis() + FPS_4;
         return true;
     }
     return false;

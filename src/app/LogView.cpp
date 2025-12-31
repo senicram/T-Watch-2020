@@ -226,7 +226,7 @@ bool LogViewApplication::Tick() {
 
         btnBack->DrawTo(canvas);
 
-        nextRedraw=millis()+(1000/1);
+        nextRedraw = millis() + FPS_1;
         return true;
     }
     return false;

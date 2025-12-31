@@ -257,7 +257,7 @@ bool CalculatorApplication::Tick() {
         correctionBtn->DrawTo(canvas);
         resultBtn->DrawTo(canvas);
 
-        nextRedraw=millis()+(1000/3); // tune your required refresh
+        nextRedraw = millis() + FPS_3; // tune your required refresh
         return true;
     }
     return false;

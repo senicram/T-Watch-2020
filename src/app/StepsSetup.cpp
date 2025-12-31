@@ -87,7 +87,7 @@ bool StepsSetupApplication::Tick() {
         canvas->setTextDatum(TL_DATUM);
         canvas->drawString("Tall", 120,120);
 
-        nextRedraw=millis()+(1000/4);
+        nextRedraw = millis() + FPS_4;
         return true;
     }
     return false;

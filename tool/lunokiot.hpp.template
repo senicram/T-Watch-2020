@@ -146,7 +146,17 @@ extern int16_t                   accZ;
  */
 extern uint32_t                  FPS;
 const PROGMEM uint32_t           MAXFPS = 12;
-#define                          FPS_8  (1000 / 8) // 8 FPS is enough for GUI
+// Frame rate timing constants (milliseconds per frame)
+#define FPS_1                    (1000 / 1)  // 1 FPS  - minimal updates
+#define FPS_3                    (1000 / 3)  // 3 FPS  - slow animations
+#define FPS_4                    (1000 / 4)  // 4 FPS  - basic UI refresh
+#define FPS_6                    (1000 / 6)  // 6 FPS  - standard UI refresh
+#define FPS_8                    (1000 / 8)  // 8 FPS  - enough for most GUI
+#define FPS_10                   (1000 / 10) // 10 FPS - smooth UI interactions
+#define FPS_12                   (1000 / 12) // 12 FPS - fluid animations
+#define FPS_16                   (1000 / 16) // 16 FPS - responsive feedback
+#define FPS_18                   (1000 / 18) // 18 FPS - fast updates
+#define FPS_24                   (1000 / 24) // 24 FPS - game-like refresh
 
 extern int16_t                   touchX;           // X coordinate from last sample
 extern int16_t                   touchY;           // Y coordinate from last sample

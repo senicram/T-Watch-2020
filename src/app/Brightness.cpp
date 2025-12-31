@@ -81,7 +81,7 @@ bool BrightnessApplication::Tick() {
                     TFT_WHITE);
         brightGauge->DrawTo(canvas);
         btnBack->DrawTo(canvas);
-        nextRefresh_=millis()+(1000/3);
+        nextRefresh_ = millis() + FPS_3;
         return true;
     }
     return false;

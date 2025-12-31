@@ -86,7 +86,7 @@ bool SetTimeZoneApplication::Tick() {
         canvas->setTextDatum(CR_DATUM);
         canvas->drawString("GMT", 120, 110);
 
-        nextRedraw=millis()+(1000/4);
+        nextRedraw = millis() + FPS_4;
         return true;
     }
     return false;

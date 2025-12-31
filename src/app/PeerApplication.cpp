@@ -364,7 +364,7 @@ bool PeerApplication::Tick() {
         }
         TemplateApplication::Tick(); // calls to TemplateApplication::Tick()
 
-        nextRefresh=millis()+(1000/16);
+        nextRefresh = millis() + FPS_16;
         return true;
     }
     return false;

@@ -114,7 +114,7 @@ bool StopwatchApplication::Tick() {
         startBtn->DrawTo(canvas);
         resetBtn->DrawTo(canvas);
         pauseBtn->DrawTo(canvas);
-        nextRedraw=millis()+(1000/12);
+        nextRedraw = millis() + FPS_12;
         return true;
     }
     return false;

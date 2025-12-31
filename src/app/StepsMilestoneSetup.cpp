@@ -79,7 +79,7 @@ bool StepsMilestoneSetupApplication::Tick() {
         TemplateApplication::btnBack->DrawTo(canvas);
         desiredSteps->DrawTo(canvas);
 
-        nextRedraw=millis()+(1000/4);
+        nextRedraw = millis() + FPS_4;
         return true;
     }
     return false;

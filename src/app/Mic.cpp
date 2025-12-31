@@ -176,7 +176,7 @@ bool MicApplication::Tick() {
 
     if ( millis() > graphRedraw ) {
         audioWaveGraph->DirectDraw(40,40);
-        graphRedraw=millis()+(1000/12);
+        graphRedraw = millis() + FPS_12;
     }
     return false;
 }

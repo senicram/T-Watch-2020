@@ -154,7 +154,7 @@ bool WatchfaceBasic::Tick() {
                 currentPixel++;
             }
         }
-        nextRefresh=millis()+(1000/6);
+        nextRefresh = millis() + FPS_6;
         return true;
     }
     return false;

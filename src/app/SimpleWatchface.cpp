@@ -179,7 +179,7 @@ bool SimpleWatchfaceApplication::Tick() {
 
         watchFaceCanvas->DrawTo(canvas);
 
-        nextFullredrawMs = millis()+(1000/4);
+        nextFullredrawMs = millis() + FPS_4;
         return true;
     }
     return false;

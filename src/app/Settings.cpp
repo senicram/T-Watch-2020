@@ -182,7 +182,7 @@ bool SettingsApplication::Tick() {
         canvas->setTextColor(textColor);
         canvas->drawString("NTP-BLE",ntpBLECheck->GetX()+ntpBLECheck->GetW()+15,ntpBLECheck->GetY()+(ntpBLECheck->GetH()/2));
 
-        nextRefresh_ = millis()+(1000/6);
+        nextRefresh_ = millis() + FPS_6;
         return true;
     }
     return mustRedraw;

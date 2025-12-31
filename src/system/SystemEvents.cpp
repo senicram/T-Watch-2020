@@ -852,7 +852,7 @@ static void SystemEventTick(void *handler_args, esp_event_base_t base, int32_t i
         nextSlowSensorsTick = millis() + 2666;
     } else if (millis() > nextSensorsTick) { // poll some other sensors ( normal pooling )
         TakeBMPSample();
-        nextSensorsTick = millis() + (1000 / 6);
+        nextSensorsTick = millis() + FPS_6;
     }
 }
 
