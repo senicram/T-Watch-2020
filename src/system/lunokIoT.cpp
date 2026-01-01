@@ -130,23 +130,19 @@ void *my_dlsym(void *handle, const char *name) {
     return NULL;
 }
 
-// Swap function
-void Swap(int *arr,int i,int j){
-    int temp=arr[i];
-      arr[i]=arr[j];
-      arr[j]=temp;
+// Comparison function for qsort - descending order (reverse sort)
+// Uses proper comparison to avoid integer overflow issues
+static int CompareIntDescending(const void *a, const void *b) {
+    int ia = *(const int *)a;
+    int ib = *(const int *)b;
+    if (ib < ia) return -1;
+    if (ib > ia) return 1;
+    return 0;
 }
-  
-// A function to implement bubble sort
+
+// Sort array in descending order using qsort (O(n log n) vs O(n²) bubble sort)
 void ReverseBubbleSort(int arr[], int n) {
-    int i, j;
-    for (i = 0; i < n - 1; i++)
-  
-        // Last i elements are already 
-        // in place
-        for (j = 0; j < n - i - 1; j++)
-            if (arr[j] < arr[j + 1])
-                Swap(arr,j,j + 1);
+    qsort(arr, n, sizeof(int), CompareIntDescending);
 }
 
 bool LunokIoT::IsLittleFSEnabled() { return LittleFSReady; }

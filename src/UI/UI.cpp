@@ -341,11 +341,14 @@ TFT_eSprite * ShearSprite(TFT_eSprite *view, TransformationMatrix transform) {
     }*/
 }
 // reduce the size of image using float value (0.5=50%)
+// Tolerance for 1:1 copy optimization (allows for minor floating point differences)
+static const float SCALE_UNITY_MIN = 0.99f;
+static const float SCALE_UNITY_MAX = 1.01f;
+
 TFT_eSprite * ScaleSprite(TFT_eSprite *view, float divisor) {
     if ( nullptr == view ) { return nullptr; }
     //return ShearSprite(view,{divisor,0,0,divisor});
 
-    //if ( 1.0 == divisor ) { return DuplicateSprite(view); } // is the same!!! @TODO Duplicate invert colors :( invert colors
     if ( divisor < 0.0 ) { divisor=0.05; } // dont allow 0 scale
     int16_t nh = view->height()*divisor; // calculate new size
     int16_t nw = view->width()*divisor;
@@ -357,6 +360,15 @@ TFT_eSprite * ScaleSprite(TFT_eSprite *view, float divisor) {
         delete canvas;
         return nullptr;
     }
+
+    // Performance optimization: use pushRotated for 1:1 copy (much faster than pixel-by-pixel)
+    if ( divisor >= SCALE_UNITY_MIN && divisor <= SCALE_UNITY_MAX ) {
+        view->setPivot(view->width()/2, view->height()/2);
+        canvas->setPivot(canvas->width()/2, canvas->height()/2);
+        view->pushRotated(canvas, 0);
+        return canvas;
+    }
+
     //canvas->fillSprite(TFT_RED);//CanvasWidget::MASK_COLOR);
 
     //Serial.printf("ScaleSprite: H: %d W: %d (divisor: %f) Calculated H: %d W: %d\n",
