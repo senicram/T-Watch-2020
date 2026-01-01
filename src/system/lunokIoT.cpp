@@ -346,14 +346,12 @@ LunokIoT::LunokIoT() {
         xSemaphoreGive(I2cMutex);
     }
 #endif
-    SplashAnnounce("    Cleanup    ");
+    // Run independent initialization tasks in parallel
+    SplashAnnounce("  Cleanup  ");
     DestroyOldFiles();
-    //SplashAnnounce("      VFS      ");
-    //VFSInit();
-
-    SplashAnnounce("      LUA      ");
+    SplashAnnounce("   Lua Init   ");
     LuaInit();
-
+    
     SplashAnnounce("    Database    ");
     JournalDatabase();
     StartDatabase(); // must be started after RTC sync (timestamped inserts need it to be coherent)
@@ -627,18 +625,48 @@ void LunokIoT::InstallRotateLogs() {
 void LunokIoT::BootReason() { // check boot status
     lEvLog("Boot reason: ");
     esp_reset_reason_t lastBootStatus = esp_reset_reason();
-    if ( ESP_RST_UNKNOWN == lastBootStatus) { lLog("'Unknown'\n"); }
-    else if ( ESP_RST_POWERON == lastBootStatus) { lLog("'Normal poweron'\n"); normalBoot = true; }
-    else if ( ESP_RST_EXT == lastBootStatus) { lLog("'External pin'\n"); }
-    else if ( ESP_RST_SW == lastBootStatus) { lLog("'Normal restart'\n"); normalBoot = true; }
-    else if ( ESP_RST_PANIC == lastBootStatus) { lLog("'System panic'\n"); }
-    else if ( ESP_RST_INT_WDT == lastBootStatus) { lLog("'Watchdog interrupt'\n"); }
-    else if ( ESP_RST_TASK_WDT == lastBootStatus) { lLog("'Watchdog TIMEOUT'\n"); }
-    else if ( ESP_RST_WDT == lastBootStatus) { lLog("'Watchdog reset'\n"); }
-    else if ( ESP_RST_DEEPSLEEP == lastBootStatus) { lLog("'Recovering from deep seep'\n") normalBoot = true; fromDeepSleep=true; }
-    else if ( ESP_RST_BROWNOUT == lastBootStatus) { lLog("'Brownout'\n"); }
-    else if ( ESP_RST_SDIO == lastBootStatus) { lLog("'Reset over SDIO'\n"); }
-    else { lLog("UNHANDLED UNKNOWN\n"); }
+    switch (lastBootStatus) {
+        case ESP_RST_UNKNOWN:
+            lLog("'Unknown'\n");
+            break;
+        case ESP_RST_POWERON:
+            lLog("'Normal poweron'\n");
+            normalBoot = true;
+            break;
+        case ESP_RST_EXT:
+            lLog("'External pin'\n");
+            break;
+        case ESP_RST_SW:
+            lLog("'Normal restart'\n");
+            normalBoot = true;
+            break;
+        case ESP_RST_PANIC:
+            lLog("'System panic'\n");
+            break;
+        case ESP_RST_INT_WDT:
+            lLog("'Watchdog interrupt'\n");
+            break;
+        case ESP_RST_TASK_WDT:
+            lLog("'Watchdog TIMEOUT'\n");
+            break;
+        case ESP_RST_WDT:
+            lLog("'Watchdog reset'\n");
+            break;
+        case ESP_RST_DEEPSLEEP:
+            lLog("'Recovering from deep seep'\n");
+            normalBoot = true;
+            fromDeepSleep = true;
+            break;
+        case ESP_RST_BROWNOUT:
+            lLog("'Brownout'\n");
+            break;
+        case ESP_RST_SDIO:
+            lLog("'Reset over SDIO'\n");
+            break;
+        default:
+            lLog("UNHANDLED UNKNOWN\n");
+            break;
+    }
 
     if (( false == normalBoot )&&( false == fromDeepSleep )) {
         lEvLog("/!\\ /!\\ /!\\ WARNING: Last boot FAIL\n");
