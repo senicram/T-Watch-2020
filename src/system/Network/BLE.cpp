@@ -233,8 +233,22 @@ class LBLEUARTCallbacks: public NimBLECharacteristicCallbacks {
             gadgetbridgeCommandInProgress=true;
             if ( nullptr != myHost->gadgetBridgeBuffer ) { free(myHost->gadgetBridgeBuffer); myHost->gadgetBridgeBuffer=nullptr; }
             myHost->gadgetBridgeBuffer = (char*)ps_malloc(gadgetBridgeBufferSize);
-            sprintf(myHost->gadgetBridgeBuffer,"%s",receivedData+strlen(GadgetbridgeCommandBEGIN)); // ignore cmd string
-            myHost->gadgetBridgeBufferOffset=strlen(myHost->gadgetBridgeBuffer);
+            if (nullptr == myHost->gadgetBridgeBuffer) {
+                lNetLog("BLE: UART: memory ERROR! (no buffer space for gadgetbridge)\n");
+                gadgetbridgeCommandInProgress=false;
+                return;
+            }
+            size_t initialLen = strlen(receivedData+strlen(GadgetbridgeCommandBEGIN));
+            if ( initialLen >= gadgetBridgeBufferSize ) {
+                lNetLog("BLE: UART: Gadgetbridge payload too large, dropping command\n");
+                gadgetbridgeCommandInProgress=false;
+                free(myHost->gadgetBridgeBuffer);
+                myHost->gadgetBridgeBuffer=nullptr;
+                myHost->gadgetBridgeBufferOffset=0;
+                return;
+            }
+            memcpy(myHost->gadgetBridgeBuffer, receivedData+strlen(GadgetbridgeCommandBEGIN), initialLen+1); // ignore cmd string
+            myHost->gadgetBridgeBufferOffset=initialLen;
             return;
         } else if ( gadgetbridgeCommandInProgress ) {
             if (nullptr == myHost->gadgetBridgeBuffer) {
@@ -244,17 +258,29 @@ class LBLEUARTCallbacks: public NimBLECharacteristicCallbacks {
                 return;
             }
             lNetLog("BLE: UART: Continue Gadgetbridge GB command\n");
-            // copy to buffer
-            for (int i = 0; i < rxValue.length(); i++) {
-                myHost->gadgetBridgeBuffer[myHost->gadgetBridgeBufferOffset]=rxValue[i];
-                myHost->gadgetBridgeBufferOffset++;
-
+            size_t chunkLen = rxValue.length();
+            size_t remainingSpace = gadgetBridgeBufferSize - myHost->gadgetBridgeBufferOffset;
+            if ( chunkLen >= remainingSpace ) {
+                lNetLog("BLE: UART: Gadgetbridge payload overflow, dropping command\n");
+                gadgetbridgeCommandInProgress=false;
+                myHost->gadgetBridgeBufferOffset=0;
+                free(myHost->gadgetBridgeBuffer);
+                myHost->gadgetBridgeBuffer=nullptr;
+                return;
             }
+            memcpy(myHost->gadgetBridgeBuffer+myHost->gadgetBridgeBufferOffset, rxValue.data(), chunkLen);
+            myHost->gadgetBridgeBufferOffset+=chunkLen;
+            myHost->gadgetBridgeBuffer[myHost->gadgetBridgeBufferOffset]=0;
             // check if is the end
             const char *toLast=receivedData;
             toLast+=strlen(receivedData)-strlen(GadgetbridgeCommandEND);
             if ( 0 == strcmp(GadgetbridgeCommandEND,toLast)) {
-                myHost->gadgetBridgeBuffer[myHost->gadgetBridgeBufferOffset-2]=0; // correct eol
+                if ( myHost->gadgetBridgeBufferOffset >= 2 ) {
+                    myHost->gadgetBridgeBuffer[myHost->gadgetBridgeBufferOffset-2]=0; // drop closing ")\n"
+                } else {
+                    myHost->gadgetBridgeBufferOffset=0;
+                    if ( nullptr != myHost->gadgetBridgeBuffer ) { myHost->gadgetBridgeBuffer[0]=0; }
+                }
                 gadgetbridgeCommandInProgress=false;
                 lNetLog("BLE: UART: End Gadgetbridge GB command\n");
                 // Parse outside
@@ -279,8 +305,22 @@ class LBLEUARTCallbacks: public NimBLECharacteristicCallbacks {
             bangleCommandInProgress=true;
             if ( nullptr != myHost->gadgetBridgeBuffer ) { free(myHost->gadgetBridgeBuffer); myHost->gadgetBridgeBuffer=nullptr; }
             myHost->gadgetBridgeBuffer = (char*)ps_malloc(gadgetBridgeBufferSize);
-            sprintf(myHost->gadgetBridgeBuffer,"%s",receivedData+1); // bypass \x10
-            myHost->gadgetBridgeBufferOffset=strlen(myHost->gadgetBridgeBuffer);
+            if (nullptr == myHost->gadgetBridgeBuffer) {
+                lNetLog("BLE: UART: memory ERROR! (no buffer space for bangle command)\n");
+                bangleCommandInProgress=false;
+                return;
+            }
+            size_t initialLen = strlen(receivedData+1);
+            if ( initialLen >= gadgetBridgeBufferSize ) {
+                lNetLog("BLE: UART: BangleJS payload too large, dropping command\n");
+                bangleCommandInProgress=false;
+                free(myHost->gadgetBridgeBuffer);
+                myHost->gadgetBridgeBuffer=nullptr;
+                myHost->gadgetBridgeBufferOffset=0;
+                return;
+            }
+            memcpy(myHost->gadgetBridgeBuffer, receivedData+1, initialLen+1); // bypass \x10
+            myHost->gadgetBridgeBufferOffset=initialLen;
             return;
         } else if ( bangleCommandInProgress ) {
             if (nullptr == myHost->gadgetBridgeBuffer) {
@@ -291,16 +331,29 @@ class LBLEUARTCallbacks: public NimBLECharacteristicCallbacks {
                 return;
             }
             lNetLog("BLE: UART: Continue BangleJS command\n");
-            // copy to buffer
-            for (int i = 0; i < rxValue.length(); i++) {
-                myHost->gadgetBridgeBuffer[myHost->gadgetBridgeBufferOffset]=rxValue[i];
-                myHost->gadgetBridgeBufferOffset++;
+            size_t chunkLen = rxValue.length();
+            size_t remainingSpace = gadgetBridgeBufferSize - myHost->gadgetBridgeBufferOffset;
+            if ( chunkLen >= remainingSpace ) {
+                lNetLog("BLE: UART: BangleJS payload overflow, dropping command\n");
+                bangleCommandInProgress=false;
+                myHost->gadgetBridgeBufferOffset=0;
+                free(myHost->gadgetBridgeBuffer);
+                myHost->gadgetBridgeBuffer=nullptr;
+                return;
             }
+            memcpy(myHost->gadgetBridgeBuffer+myHost->gadgetBridgeBufferOffset, rxValue.data(), chunkLen);
+            myHost->gadgetBridgeBufferOffset+=chunkLen;
+            myHost->gadgetBridgeBuffer[myHost->gadgetBridgeBufferOffset]=0;
             // check if is the end
             const char *toLast=receivedData;
             toLast+=strlen(receivedData)-strlen(BangleJSCommandEND);
             if ( 0 == strcmp(BangleJSCommandEND,toLast)) {
-                myHost->gadgetBridgeBuffer[myHost->gadgetBridgeBufferOffset-1]=0; // correct eol
+                if ( myHost->gadgetBridgeBufferOffset > 0 ) {
+                    myHost->gadgetBridgeBuffer[myHost->gadgetBridgeBufferOffset-1]=0; // correct eol
+                } else {
+                    myHost->gadgetBridgeBufferOffset=0;
+                    if ( nullptr != myHost->gadgetBridgeBuffer ) { myHost->gadgetBridgeBuffer[0]=0; }
+                }
                 bangleCommandInProgress=false;
                 //bleBeingUsed=false;
                 lNetLog("BLE: UART: End BangleJS command\n");
