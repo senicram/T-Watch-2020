@@ -181,8 +181,18 @@ bool ParseBangleJSMessage(char * javascript) {
     for (token = strtok(javascript, Separator); token; token = strtok(NULL, Separator)) {
         if ( 0 == strncmp(token,SetTimeZoneCMD,strlen(SetTimeZoneCMD))) {
             char numBuffer[30]={ 0 };
-            sprintf(numBuffer,"%s",token+strlen(SetTimeZoneCMD));
-            numBuffer[strlen(numBuffer)-1]=0; // remove last ")"
+            int written = snprintf(numBuffer,sizeof(numBuffer),"%.*s",(int)(sizeof(numBuffer)-2),token+strlen(SetTimeZoneCMD));
+            size_t numLen = strlen(numBuffer);
+            if (written < 0) { continue; }
+            if ((size_t)written >= sizeof(numBuffer)) {
+                lNetLog("Gadgetbridge: timezone payload too large, dropping command\n");
+                continue;
+            }
+            if ((numLen == 0) || (numBuffer[numLen-1] != ')')) {
+                lNetLog("Gadgetbridge: timezone payload missing terminator, dropping command\n");
+                continue;
+            }
+            numBuffer[numLen-1]=0; // remove last ")"
             int timezone = NVS.getInt("timezoneTime");
             int gbTimezone = atoi(numBuffer);
             lNetLog("Gadgetbridge: Current timezone: %+d offered: %+d\n",timezone,gbTimezone);
@@ -198,8 +208,18 @@ bool ParseBangleJSMessage(char * javascript) {
         }
         if ( 0 == strncmp(token,SetTimeCMD,strlen(SetTimeCMD))) {
             char numBuffer[10]={ 0 };
-            sprintf(numBuffer,"%s",token+strlen(SetTimeCMD));
-            numBuffer[strlen(numBuffer)-1]=0; // remove last ")"
+            int written = snprintf(numBuffer,sizeof(numBuffer),"%.*s",(int)(sizeof(numBuffer)-2),token+strlen(SetTimeCMD));
+            size_t numLen = strlen(numBuffer);
+            if (written < 0) { continue; }
+            if ((size_t)written >= sizeof(numBuffer)) {
+                lNetLog("Gadgetbridge: time payload too large, dropping command\n");
+                continue;
+            }
+            if ((numLen == 0) || (numBuffer[numLen-1] != ')')) {
+                lNetLog("Gadgetbridge: time payload missing terminator, dropping command\n");
+                continue;
+            }
+            numBuffer[numLen-1]=0; // remove last ")"
             long newTime = atol(numBuffer);
             lNetLog("Gadgetbridge: setTime: '%s'\n",numBuffer);
             bool userWants = NVS.getInt("NTPBLEEnabled");
