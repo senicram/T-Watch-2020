@@ -181,7 +181,7 @@ void LaunchApplicationTaskSync(LaunchApplicationDescriptor * appDescriptor,bool 
     LunokIoTApplication * ptrToCurrent = currentApplication;
     if ( nullptr == instance ) { // this situation is indeed as prior to screen sleep
         lUILog("Application: None\n");
-        currentApplication = nullptr;     // no one driving now x'D
+        currentApplication = nullptr;     // no application driving now
         tft->fillScreen(TFT_BLACK); // at this point, only system is working, the UI is in a dead-end in a "null application"
         // UI is dead beyond here, no app on foreground, only external events or timed triggers can solve this point :)
     } else {
@@ -375,7 +375,7 @@ void LunokIoTApplication::LowMemory() {
         }
     }
     lastAppsOffset=0;
-    /* @TODO maybe building before delete... but this must be increment the fragmentation x'D
+    /* @TODO maybe building before delete... but this may increase fragmentation
     if ( nullptr != canvas ) {
         // try to regenerate canvas (move memory) with a bit of lucky, the new location is a better place
         canvas->deleteSprite();

@@ -275,8 +275,8 @@ bool StepsApplication::Tick() {
         float range=maxVal-minVal;
         float correctedValue=milestone-minVal;
         int32_t pcValue = 0;
-        if ( 0 == correctedValue ) { pcValue = 0; } // don't perform divide by zero x'D
-        else if ( 0 == range ) { pcValue = 0; }     // don't perform divide by zero x'D
+        if ( 0 == correctedValue ) { pcValue = 0; } // avoid divide by zero
+        else if ( 0 == range ) { pcValue = 0; }     // avoid divide by zero
         else { pcValue = (correctedValue/range)*weekGraph->canvas->height(); }
         canvas->drawFastHLine(20,(weekGraph->canvas->height()+45)-pcValue,200,ThCol(high));
         

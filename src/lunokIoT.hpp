@@ -87,7 +87,7 @@ class LunokIoT {
         size_t selectedWatchFace  = 0;
     protected:
         LunokIoT();
-        ~LunokIoT() {}; // implemented here ¿what kind of singleton.... x'D
+        ~LunokIoT() {}; // destructor - singleton pattern
     private:
         const float      BootWifiPerformSeconds = 10;      // time to first wifi tasks launch
         Ticker           BootWifiPerform;                  // used to launch tasks on first boot faster than "one cycle"

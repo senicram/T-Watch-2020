@@ -67,7 +67,7 @@ bool ActivitiesApplication::Tick() {
     }
     giroLog->scroll(6,0);
     /*
-    /// RGB -> BRG !!!! OMG!!! shit
+    /// Note: RGB -> BRG color order conversion
     giroLog->drawFastVLine(0,50-(pcX/2), pcX, giroLog->color565(0,255,0));
     giroLog->drawFastVLine(2,50-(pcY/2), pcY, giroLog->color565(0,0,255));
     giroLog->drawFastVLine(4,50-(pcZ/2), pcZ, giroLog->color565(255,0,0));

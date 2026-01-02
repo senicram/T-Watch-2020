@@ -57,7 +57,7 @@ bool LoTWiFi::RadioInUse() {
 bool LoTWiFi::InUse() {
     bool response;
     BaseType_t res = xSemaphoreTake( taskLock, LUNOKIOT_EVENT_FAST_TIME_TICKS);
-    if ( pdFALSE == res ) { return true; } // locked, ergo in use x'D
+    if ( pdFALSE == res ) { return true; } // locked, therefore in use
     response=running;
     xSemaphoreGive( taskLock );
     return response;
@@ -66,7 +66,7 @@ bool LoTWiFi::InUse() {
 bool LoTWiFi::IsEnabled() {
     bool response;
     BaseType_t res = xSemaphoreTake( taskLock, LUNOKIOT_EVENT_FAST_TIME_TICKS);
-    if ( pdFALSE == res ) { return true; } // locked, ergo in use x'D
+    if ( pdFALSE == res ) { return true; } // locked, therefore in use
     response=enabled;
     xSemaphoreGive( taskLock );
     return response;
@@ -130,8 +130,8 @@ void LoTWiFi::AddConnection(const char *SSID,const char *password) {
     NVS.setString(String(labelName),String(nPwd));
     wifiMulti.addAP(nSSID,nPwd);
     //provisioned=true;
-    int shit = LoT().GetSettings()->GetInt(SystemSettings::SettingKey::WiFiCredentialsNumber);
-    lLog("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA: %d\n",shit);
+    int credentialsCount = LoT().GetSettings()->GetInt(SystemSettings::SettingKey::WiFiCredentialsNumber);
+    lLog("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA: %d\n",credentialsCount);
     xSemaphoreGive( taskLock );
 }
 

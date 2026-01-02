@@ -70,7 +70,7 @@ class NTPWifiTask;
 
 extern SemaphoreHandle_t I2cMutex;
 
-/* monkey patch x'D
+/* Monkey patch for memory debugging
 // build_flags = -Wl,--wrap=ps_malloc
 void ARDUINO_ISR_ATTR *__real_ps_malloc(size_t size);
 void ARDUINO_ISR_ATTR *__wrap_ps_malloc(size_t size) {
@@ -457,7 +457,7 @@ void LunokIoT::InitLogs() {
 #include <IRsend.h>
 
 IRsend irLed(TWATCH_2020_IR_PIN);
-void shit() {
+void irTest() {
   const uint16_t rawData[] = { 0, 65535, 0, 65535 };
   irLed.begin();
   while(true) {

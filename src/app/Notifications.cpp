@@ -162,7 +162,7 @@ bool NotificacionsApplication::Tick() {
                                     char * ptrClean = token;
                                     while ( ' ' == *ptrClean) { ptrClean++; }
                                     // draw real sender user (assume a normal a-z string, otherwise scrambled at this time :P)
-                                    //@TODO :icons: and other shit support like unicode UTF fucking nightmare
+                                    //@TODO :icons: and other special character support like unicode UTF encoding
                                     canvas->setTextDatum(TL_DATUM);
                                     canvas->setTextSize(1);
                                     canvas->drawString("Who:", 85, 40);

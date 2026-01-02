@@ -29,7 +29,7 @@ class ButtonWidget: public ActiveRect, public CanvasWidget {
     protected:
         bool lastPushed=false;
     public:
-        CanvasWidget * buffer; // this fucking buffer is only for bitswap color
+        CanvasWidget * buffer; // buffer for bitswap color operations
 
         bool Interact(bool touch, int16_t tx,int16_t ty);
         virtual ~ButtonWidget();

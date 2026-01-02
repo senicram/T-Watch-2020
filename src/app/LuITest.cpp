@@ -47,8 +47,8 @@ LuITestApplication::LuITestApplication() {
     canvas->fillSprite(ThCol(background));
     Container * screen = new Container(LuI_Horizontal_Layout,3); 
     Container * upContainer = new Container(LuI_Vertical_Layout,2); 
-    Container * shit = new Container(LuI_Vertical_Layout,2);
-    Container * shit2 = new Container(LuI_Horizontal_Layout,2);
+    Container * mainContainer = new Container(LuI_Vertical_Layout,2);
+    Container * innerContainer = new Container(LuI_Horizontal_Layout,2);
 
     duc = new Text("World",TFT_SKYBLUE);
     duc->SetBackgroundColor(ThCol(background));
@@ -76,7 +76,7 @@ LuITestApplication::LuITestApplication() {
     upContainer->AddChild(testButtonUp);
     upContainer->AddChild(upText);
     screen->AddChild(upContainer);
-    shit2->AddChild(new Check());
+    innerContainer->AddChild(new Check());
     Button *testButton = new Button();
     testButton->AddChild(new Text("Hello world!"));
 
@@ -95,10 +95,10 @@ LuITestApplication::LuITestApplication() {
         self->view3DTest->dirty=true;
         lLog("PUSH THE BUTTOn!\n");
     };
-    shit2->AddChild(testButton);
-    shit->AddChild(shit2);
-    shit->AddChild(duc);
-    screen->AddChild(shit);
+    innerContainer->AddChild(testButton);
+    mainContainer->AddChild(innerContainer);
+    mainContainer->AddChild(duc);
+    screen->AddChild(mainContainer);
 
     screen->AddChild(view3DTest);
 

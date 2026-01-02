@@ -310,10 +310,10 @@ static int BLESqlGetDeviceCallback(void *data, int argc, char **argv, char **azC
     }
     if ( nullptr == address ) { return 0; }
 
-    NimBLEAddress shitBLE = NimBLEAddress(address);
+    NimBLEAddress bleAddress = NimBLEAddress(address);
     //if( xSemaphoreTake( BLEKnowDevicesSemaphore, LUNOKIOT_EVENT_IMPORTANT_TIME_TICKS) == pdTRUE )  {
         for (auto const& dev : BLEKnowDevices) {
-            if ( dev->addr == shitBLE ) {
+            if ( dev->addr == bleAddress ) {
                 dev->distance=atoi(distance);
                 dev->locationGroup=atoi(locationGroup);
                 //if ( -1 == dev->locationGroup ) { dev->locationGroup=BLEZoneLocations::UNKNOWN; }
@@ -337,7 +337,7 @@ static int BLESqlGetDeviceCallback(void *data, int argc, char **argv, char **azC
     //}
     //lLog("BUILD NEW <------------------------------\n");
     lBLEDevice * newDev = new lBLEDevice();
-    newDev->addr = shitBLE;
+    newDev->addr = bleAddress;
     newDev->firstSeen = millis();
     newDev->lastSeen = newDev->firstSeen;
     newDev->distance=atoi(distance);

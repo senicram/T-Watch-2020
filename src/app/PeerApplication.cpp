@@ -21,7 +21,7 @@
 #include <esp_now.h>
 #include <WiFi.h>
 #include <LilyGoWatch.h>
-extern TTGOClass *ttgo; // ttgo library shit ;)
+extern TTGOClass *ttgo; // TTGO library
 #include "LogView.hpp" // log capabilities
 #include "../UI/AppTemplate.hpp"
 #include "PeerApplication.hpp"
@@ -235,7 +235,7 @@ PeerApplication::PeerApplication() {
             }
             lAppLog("selectedEmojiOffset: %d\n",selectedEmojiOffset);
             
-            // hack my own buttons x'DD
+            // Update button appearance dynamically
             sendEmojiBtn->XBMBitmapPtr = emojiArray[selectedEmojiOffset].data;
             sendEmojiBtn->xbmH = emojiArray[selectedEmojiOffset].height;
             sendEmojiBtn->xbmW = emojiArray[selectedEmojiOffset].width;

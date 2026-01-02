@@ -91,7 +91,7 @@ bool TaskSwitcher::Tick() {
         bool alreadyExists=false;
         int16_t x=canvas->width()/6;
         int16_t y=canvas->height()/6;
-        //lLog("@TODO ugly hardcoded list of hidden apps (use const string and share with the apps AppName())\n");
+        //lLog("@TODO refactor hardcoded list of hidden apps (use const string and share with the apps AppName())\n");
         if( xSemaphoreTake( lAppStack, LUNOKIOT_EVENT_IMPORTANT_TIME_TICKS) == pdTRUE )  {
             int tileCount=0;
             while ( searchOffset > 0 ) {

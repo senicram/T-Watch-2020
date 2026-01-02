@@ -420,7 +420,7 @@ void Watchface2Application::RedrawDisplay() {
             StateDisplay->canvas->drawChar(whatToSay[bannerOffset],StateDisplay->canvas->width()-DisplayFontWidth,4);
             bannerOffset++;
             if (bannerOffset > strlen(whatToSay)) {
-                // @TODO ugly
+                // @TODO refactor memory management
                 free(whatToSay);
                 whatToSay=nullptr;
                 StateDisplay->canvas->fillSprite(TFT_BLACK);

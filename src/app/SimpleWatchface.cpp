@@ -20,7 +20,7 @@
 #include <Arduino.h>
 #include <LilyGoWatch.h>
 #include "../lunokiot_config.hpp"
-extern TTGOClass *ttgo; // ttgo library shit ;)
+extern TTGOClass *ttgo; // TTGO library
 #include "../UI/widgets/CanvasWidget.hpp"
 #include "../UI/widgets/ButtonWidget.hpp"
 #include "../UI/widgets/ButtonImageXBMWidget.hpp"
@@ -76,7 +76,7 @@ void SimpleWatchfaceApplication::NTPSync(void * data) {
     delay(10);
     struct tm timeinfo;
     if (getLocalTime(&timeinfo)) {
-        ttgo->rtc->syncToRtc(); // WTF? magic code now works? // old: why don't work as expect? (getLocalTime to RTC)
+        ttgo->rtc->syncToRtc(); // Sync time to RTC (getLocalTime to RTC)
         RTC_Date d = ttgo->rtc->getDateTime();
         if (d.year != (timeinfo.tm_year + 1900) || d.month != timeinfo.tm_mon + 1
                         || d.day !=  timeinfo.tm_mday ||  d.hour != timeinfo.tm_hour
@@ -171,7 +171,7 @@ bool SimpleWatchfaceApplication::Tick() {
 
                 minuteHandCanvas->canvas->pushRotated(watchFaceCanvas->canvas,timeinfo.tm_min*6,CanvasWidget::MASK_COLOR);
                 hourHandCanvas->canvas->pushRotated(watchFaceCanvas->canvas,timeinfo.tm_hour*30,CanvasWidget::MASK_COLOR);
-                secondHandCanvas->canvas->pushRotated(watchFaceCanvas->canvas,timeinfo.tm_sec*6,CanvasWidget::MASK_COLOR); // fuck the color rotation x'D
+                secondHandCanvas->canvas->pushRotated(watchFaceCanvas->canvas,timeinfo.tm_sec*6,CanvasWidget::MASK_COLOR);
                 //sprintf(timeStr,"%02d:%02d", timeinfo.tm_hour,timeinfo.tm_min);
                 //Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
             }

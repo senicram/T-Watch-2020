@@ -47,7 +47,7 @@
 
 #include "../lunokIoT.hpp"
 #include <LilyGoWatch.h>
-extern TTGOClass *ttgo; // ttgo library shit ;)
+extern TTGOClass *ttgo; // TTGO library
 
 
 esp_https_ota_handle_t https_ota_handle = NULL;

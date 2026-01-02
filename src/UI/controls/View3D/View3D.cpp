@@ -103,7 +103,7 @@ void View3D::SetGlobalScale(IN Vertex3D globScale ) {
     SetAllDirty();
 }
 void View3D::SetGlobalRotation(INOUT Angle3D globRotation ) {
-    // apply global shit
+    // apply global rotation
     if ( globRotation.x > 359 ) { globRotation.x-=360; }
     else if ( globRotation.x < 0 ) { globRotation.x+=360; }
     if ( globRotation.y > 359 ) { globRotation.y-=360; }
@@ -489,7 +489,7 @@ TFT_eSprite * View3D::GetCanvas() {
     return nullptr; // deny render without DirectDraw
 }
 
-    // @TODO ugly code
+    // @TODO refactor rendering code
     /*
     if ( false == firstPush ) {
         firstPush=true;
