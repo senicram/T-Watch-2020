@@ -84,7 +84,7 @@ bool GaugeWidget::Interact(bool touch, int16_t tx,int16_t ty, int16_t margin) {
     double radAngle = atan2(tdvY, tdvX);
     int16_t degAngle = radAngle * (180.0/3.14);
     int16_t nuSelectedAngle = (180+degAngle)-90;
-    if ( nuSelectedAngle < 0 ) { nuSelectedAngle = 360-abs(nuSelectedAngle); } // ugly :(
+    if ( nuSelectedAngle < 0 ) { nuSelectedAngle = 360-abs(nuSelectedAngle); } // handle negative angles
     //Serial.printf("ANGLE: DEG: %d\n", nuSelectedAngle);
     if ( nuSelectedAngle != selectedAngle ) {
         selectedAngle = nuSelectedAngle;

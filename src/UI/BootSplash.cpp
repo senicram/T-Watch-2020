@@ -43,7 +43,7 @@
 #endif
 
 #include "UI.hpp"
-#include "../app/LogView.hpp" // lLog shit
+#include "../app/LogView.hpp" // logging functionality
 #include "../resources.hpp"
 
 #ifdef LILYGO_DEV
@@ -131,7 +131,7 @@ void SleepFanfare() {
     return;
 #endif
     //unsigned long begin=millis();
-    // Audio fanfare x'D
+    // Audio startup sound
     lUILog("Audio: Initialize\n");
     
     ttgo->enableAudio();
@@ -248,7 +248,7 @@ void SplashAnnounce() {
     int32_t posY = 10;
     // more than needed buffer (in stack for guarantee their destruction)
     char buildNumberAsString[10] = { 0 };
-    // dump my shit string buffer
+    // format build number as string
     sprintf(buildNumberAsString,"#%u", LUNOKIOT_BUILD_NUMBER );
     tft->setTextColor(TFT_DARKGREY);
     tft->drawString(buildNumberAsString, posX, posY);

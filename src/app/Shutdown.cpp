@@ -19,7 +19,7 @@
 
 #include <Arduino.h>
 #include <LilyGoWatch.h>
-extern TTGOClass *ttgo; // ttgo library shit ;)
+extern TTGOClass *ttgo; // TTGO library
 
 #include "../lunokiot_config.hpp"
 

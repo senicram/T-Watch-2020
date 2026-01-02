@@ -55,7 +55,7 @@ void FreehandKeyboardLetterChoiceApplication::SavePerceptronWithSymbol(char symb
     sprintf(keyName,"freeHandSym_%c", symbol);
     bool ok = NVS.setBlob(keyName, (uint8_t*)bufferdata, totalSize,false);
     if (false == ok) { lAppLog("NVS: ERROR: Unable to save '%s'\n",keyName); }
-    free(bufferdata); // free buffer shit packed data
+    free(bufferdata); // free serialized buffer data
 }
 
 Perceptron * FreehandKeyboardLetterChoiceApplication::LoadPerceptronFromSymbol(char symbol) {

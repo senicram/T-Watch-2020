@@ -206,7 +206,7 @@ void BLEPlayerApplication::TryGetCoverOfTite() {
                 xSemaphoreGive( instance->GetCoverLock );
                 return;
             }
-            String payload = coverClient.getString(); // fuck strings
+            String payload = coverClient.getString(); // get response string
             instance->receivedCoverBuffer = (char*)ps_malloc(payload.length()+1);
             strcpy(instance->receivedCoverBuffer, payload.c_str());
             lLog("Free http client with %d response\n",httpResponseCode);

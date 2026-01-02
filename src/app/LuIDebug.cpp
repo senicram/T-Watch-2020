@@ -205,7 +205,7 @@ DebugLuIApplication::DebugLuIApplication() {
     centerDiv->AddChild(view3DTest1,2.45);
     centerDiv->AddChild(myBottomButtonSet,0.0);
 
-    mainDiv->AddChild(btnPanelRight,0.0); // dyslexia test x'D
+    mainDiv->AddChild(btnPanelRight,0.0); // panel layout test
     mainDiv->AddChild(centerDiv,2.45);
     mainDiv->AddChild(btnPanelLeft,0.55);
     body->AddChild(mainDiv);

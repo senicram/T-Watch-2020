@@ -148,7 +148,7 @@ bool CalendarLogDetailApplication::Tick() {
         logView->GetBuffer()->drawString("Activiy:",15,70);
         logView->GetBuffer()->drawString("Application:",15,130);
         logView->GetBuffer()->drawString("Network:",15,190);
-        AppsGraph->markColor = ByteSwap(TFT_BLACK); // stupid monkey x'D
+        AppsGraph->markColor = ByteSwap(TFT_BLACK); // byte swap for color format
         logView->GetBuffer()->setFreeFont(&FreeMono9pt7b);
         currentDB->SendSQL("SELECT timestamp,message FROM rawlogSession WHERE 1;",[](void *data, int argc, char **argv, char **azColName) {
             //bool found=false;

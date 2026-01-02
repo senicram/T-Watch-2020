@@ -223,7 +223,7 @@ void DungeonLevelGenerator(void *data) {
     }
     
     lLog("Removing small holes...\n");
-    // remove stupid holes using colindant values
+    // remove small holes using adjacent values
     for(int32_t y=0;y<floorMap->height();y+=4) {
         for(int32_t x=0;x<floorMap->width();x+=4) {
             uint16_t color = floorMap->readPixel(x,y);
@@ -386,7 +386,7 @@ void DungeonLevelGenerator(void *data) {
                     } else if ( 12 == wallRightColor ) {
                         topMap->drawPixel(x,y-1,70); // bite right
                     } else {
-                        topMap->drawPixel(x,y-1,18); // fuck! why?
+                        topMap->drawPixel(x,y-1,18); // fallback case
                     }
                 }
             }            

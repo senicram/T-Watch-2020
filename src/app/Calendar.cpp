@@ -55,7 +55,7 @@ int dayNumber(int day, int month, int year)  {
 } 
 void CalendarApplication::CheckDatabasesForMonth() {
     // clean current month
-    // @TODO ugly
+    // @TODO refactor array initialization
     //memset(databaseFoundDay,false,sizeof(bool)*32);
     for(int d=0;d<MAXDAYS;d++) {
         databaseFoundDay[d]=false;

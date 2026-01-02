@@ -44,8 +44,8 @@ bool GraphWidget::PushValue(int64_t value) {
         float range=maxValue-minValue;
         float correctedValue=value-minValue;
         int32_t pcValue = 0;
-        if ( 0 == correctedValue ) { pcValue = 0; } // don't perform divide by zero x'D
-        else if ( 0 == range ) { pcValue = 0; }     // don't perform divide by zero x'D
+        if ( 0 == correctedValue ) { pcValue = 0; } // avoid divide by zero
+        else if ( 0 == range ) { pcValue = 0; }     // avoid divide by zero
         else { pcValue = (correctedValue/range)*canvas->height(); }
         //lUILog("@DEBUG pixels: %d, val: %lld, corrected: %.2f, min: %lld, max: %lld, range: %.2f, canvas: %d\n",pcValue,value,correctedValue,minValue,maxValue,range,canvas->height());
         // bottom to top
@@ -65,8 +65,8 @@ bool GraphWidget::PushValue(int64_t value) {
         float range=maxValue-minValue;
         float correctedValue=value-minValue;
         int32_t pcValue = 0;
-        if ( 0 == correctedValue ) { pcValue = 0; } // don't perform divide by zero x'D
-        else if ( 0 == range ) { pcValue = 0; }     // don't perform divide by zero x'D
+        if ( 0 == correctedValue ) { pcValue = 0; } // avoid divide by zero
+        else if ( 0 == range ) { pcValue = 0; }     // avoid divide by zero
         else { pcValue = (correctedValue/range)*canvas->height(); }
         //lUILog("@DEBUG pixels: %d, val: %lld, corrected: %.2f, min: %lld, max: %lld, range: %.2f, canvas: %d\n",pcValue,value,correctedValue,minValue,maxValue,range,canvas->height());
         // bottom to top

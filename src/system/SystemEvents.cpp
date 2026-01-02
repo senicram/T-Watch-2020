@@ -82,7 +82,7 @@ uint32_t systemStatsBootCounter = 0;
 uint32_t systemStatsRebootCounter = 0;
 uint32_t systemStatsCrashCounter = 0;
 
-uint32_t deviceSleepMSecs = 0; // time wasted in lightSleep waiting user interactions (forever alone time x'D)
+uint32_t deviceSleepMSecs = 0; // time spent in lightSleep waiting for user interactions (idle time)
 unsigned long deviceUsageMSecs=0; // time interacted with the user
 float deviceUsageRatio=100.0;   // device usage percentage ratio
 
@@ -367,7 +367,7 @@ static void DoSleepTask(void *args) {
 
     FreeSpace();
     lEvLog("ESP32: -- ZZz --\n");
-    // stupid take to get clarified about "before sleep and after"
+    // ensure logging semaphore is released before sleep
     if( pdTRUE == xSemaphoreTake( lLogAsBlockSemaphore, LUNOKIOT_EVENT_MANDATORY_TIME_TICKS) )  {
         xSemaphoreGive( lLogAsBlockSemaphore );
     }

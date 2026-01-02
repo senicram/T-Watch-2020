@@ -1010,7 +1010,7 @@ AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAa
     lNetLog("BLE: Task ends here\n");
     bleServiceRunning=false;
     bleEnabled=false;
-    vTaskDelete(NULL); // harakiri x'D
+    vTaskDelete(NULL); // delete this task
 }
 */
 /*

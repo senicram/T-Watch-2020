@@ -96,7 +96,7 @@ void Container::Refresh(bool direct) {
             continue;
         }
         // re-set children size
-        if ( LuI_Vertical_Layout == layout ) { // @TODO do this better x'D
+        if ( LuI_Vertical_Layout == layout ) { // @TODO improve layout calculation
             int32_t testH = height-(border*2);
             if ( testH < 0 ) { lUILog("Container %p Child: %u %p SO SMALL HEIGHT!\n",this,current,children[current]); }
             children[current]->SetSize(sizeWidth,testH);

@@ -48,7 +48,7 @@ void GeoIPWifiTask::Launch() {
         free(geoIPReceivedData);
         geoIPReceivedData = nullptr;
     }
-    String payload = geoIPClient.getString(); // fuck strings
+    String payload = geoIPClient.getString(); // get response string
     
     lNetLog("Task: %p '%s' free http client\n",this,Name());
     geoIPClient.end();

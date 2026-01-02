@@ -84,6 +84,6 @@ LuI::Button::Button(LuI_Layout layout, size_t childs,bool decorations,uint16_t c
 void LuI::Button::EventHandler() {
     // I'm a button, react about events (tapCallback mostly)
     Control::EventHandler();
-    // Butt... I'm also a container, 'share the word' x'D with children :)
+    // Also forward events to children as container
     Container::EventHandler();
 }

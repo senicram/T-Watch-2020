@@ -194,7 +194,7 @@ bool WatchfaceDotApplication::Tick() {
 
         if ( showDetails ) {
             locationBuffer->canvas->fillSprite(TFT_PINK);
-            char textBuffer[100] = { 0 }; // much more than can be represented x'D
+            char textBuffer[100] = { 0 }; // buffer larger than display capacity
             locationBuffer->canvas->setTextFont(0);
             locationBuffer->canvas->setTextSize(1);
             locationBuffer->canvas->setTextDatum(TL_DATUM);

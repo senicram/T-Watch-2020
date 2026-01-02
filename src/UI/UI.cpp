@@ -58,10 +58,10 @@
 extern SoftwareKeyboard *keyboardInstance;
 
 #ifdef LILYGO_DEV
-extern TTGOClass *ttgo; // ttgo library shit ;)
+extern TTGOClass *ttgo; // TTGO library
 extern TFT_eSPI * tft;
 #elif defined(M5_DEV)
-//extern TTGOClass *ttgo; // ttgo library shit ;)
+//extern TTGOClass *ttgo; // TTGO library
 extern M5Display * tft;
 #endif
 
@@ -196,7 +196,7 @@ void TakeScreenShootSound() {
     return;
 #endif
 #ifdef LILYGO_WATCH_2020_V3
-    // Audio fanfare x'D
+    // Audio startup sound
     lUILog("Audio: Initialize\n");
     ttgo->enableAudio();
 
@@ -865,7 +865,7 @@ void UIStart() {
     uiLoopRc = esp_event_handler_instance_register_with(uiEventloopHandle, UI_EVENTS, UI_EVENT_APP_LAUNCH_END, UIEventLaunchAppEnd, nullptr, NULL);
     //    esp_event_handler_instance_register_with(uiEventloopHandle, UI_EVENTS, UI_EVENT_ANCHOR2D_CHANGE, UIAnchor2DChange, nullptr, NULL);
 
-    // Useless if is sended later than whake x'D
+    // Note: Useless if sent after wake
     //    esp_event_handler_instance_register_with(uiEventloopHandle, UI_EVENTS, UI_EVENT_CONTINUE, UIEventContinue, nullptr, NULL);
     //    esp_event_handler_instance_register_with(uiEventloopHandle, UI_EVENTS, UI_EVENT_STOP, UIEventStop, nullptr, NULL);
     
