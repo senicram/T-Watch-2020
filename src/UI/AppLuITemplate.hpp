@@ -24,12 +24,44 @@
 #include "../UI/controls/base/Control.hpp"
 #include "../UI/controls/base/Container.hpp"
 
+namespace LuI {
+    class Button;
+}
+
+// Structure to hold the standard screen layout components
+struct LuIStandardLayout {
+    LuI::Container * screen;
+    LuI::Container * viewContainer;
+    LuI::Container * bottomButtonContainer;
+    LuI::Button * backButton;
+};
+
 class TemplateLuIApplication : public LunokIoTApplication {
     protected:
         LuI::Container * child=nullptr;
         LuI::Container * GetChild() { return child; }
         void AddChild(INOUT LuI::Container *control );
         void EventHandler();
+        
+        // Helper to create a standard screen layout with view container and back button bar
+        // Returns all created containers for customization
+        // Parameters:
+        //   viewQuota: space ratio for main view (default 1.65 out of 2.0)
+        //   bottomQuota: space ratio for bottom bar (default 0.35 out of 2.0)
+        //   backgroundColor: background color (default theme background)
+        LuIStandardLayout CreateStandardLayout(
+            float viewQuota = 1.65,
+            float bottomQuota = 0.35,
+            uint16_t backgroundColor = 0xFFFF  // 0xFFFF means use theme default
+        );
+        
+        // Helper to create a standard back button with icon
+        // Returns the created button for callback customization
+        // Parameters:
+        //   useSmallIcon: if true uses 24px icon, otherwise 42px icon
+        //   border: button border size (default 10)
+        LuI::Button * CreateBackButton(bool useSmallIcon = true, uint8_t border = 10);
+        
     public:
         const char *AppName() override { return "AppTemplateLuI without name"; };
         TemplateLuIApplication();

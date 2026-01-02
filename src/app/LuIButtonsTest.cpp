@@ -31,51 +31,24 @@
 using namespace LuI;
 
 DebugLuIButtonsApplication::DebugLuIButtonsApplication() {
-    directDraw=false; // disable direct draw meanwhile build the UI
-    // fill view with background color
-    canvas->fillSprite(ThCol(background)); // use theme colors
-
-    /// create root container with two slots horizontal
-    Container * screen = new Container(LuI_Horizontal_Layout,2);
-    // bottom buttons container
-    Container * bottomButtonContainer = new Container(LuI_Vertical_Layout,2);
-
-    // main view space
-    Container * viewContainer = new Container(LuI_Vertical_Layout,2);
-
-    // if use quota, all the slot quotas must sum equal the total number of elements
-    // example: default quota in 2 controls result 50/50% of view space with 1.0 of quota everyone (2.0 in total)
-
-    // add main view with quota of 1.7
-    screen->AddChild(viewContainer,1.7);
-    // add bottom button bar shirnked
-    screen->AddChild(bottomButtonContainer,0.3);
-    // 1.7 + 0.3 = 2.0 of quota (fine for 2 slots)
-
-    // add back button to dismiss
-    LuI::Button *backButton = new LuI::Button(LuI_Vertical_Layout,1,NO_DECORATION);
-    backButton->tapCallback=[](void * obj){ LaunchWatchface(); }; // callback when tap
-    // load icon in XBM format
-    XBM * backButtonIcon = new XBM(img_backscreen_24_width,img_backscreen_24_height,img_backscreen_24_bits);
-    // put the icon inside the button
-    backButton->AddChild(backButtonIcon);
-    // shrink button to left and empty control oversized (want button on left bottom)
-    bottomButtonContainer->AddChild(backButton,0.3);
-    bottomButtonContainer->AddChild(nullptr,1.7);
-
+    // Create standard layout with view container and back button bar
+    // Use slightly different quotas to match original behavior
+    LuIStandardLayout layout = CreateStandardLayout(1.7, 0.3);
+    
     // creates the two columns of sample buttons
     Container * leftContainer= new Container(LuI_Horizontal_Layout,3);
-    viewContainer->AddChild(leftContainer);
     Container * rightContainer= new Container(LuI_Horizontal_Layout,3);
-    viewContainer->AddChild(rightContainer);
+    
+    // The layout.viewContainer has 1 slot by default, we need 2 slots
+    // Create a new container with 2 slots for left/right columns
+    Container * columnsContainer = new Container(LuI_Vertical_Layout, 2);
+    columnsContainer->AddChild(leftContainer);
+    columnsContainer->AddChild(rightContainer);
+    layout.viewContainer->AddChild(columnsContainer);
 
     // fill viewContainer with different type of buttons
     
     // left view side <-----------------------------------
-
-    // -----> basic empty button
-    //Button *basicButton = new Button(); // a basic default button
-    //leftContainer->AddChild(basicButton);
 
     // -----> text button
     LuI::Button *textButton = new LuI::Button(); // a basic default button
@@ -133,7 +106,7 @@ DebugLuIButtonsApplication::DebugLuIButtonsApplication() {
     Button3d->AddChild(new Text("Home"),1.2);
     rightContainer->AddChild(Button3d);
 
-    AddChild(screen); // add root to view
+    AddChild(layout.screen); // add root to view
     sparklesView->dirty=true; // why this?
     /* this is related with "step callback";
      * let me explain about "dirty" flag,
