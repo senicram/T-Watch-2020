@@ -131,7 +131,7 @@ void LoTWiFi::AddConnection(const char *SSID,const char *password) {
     wifiMulti.addAP(nSSID,nPwd);
     //provisioned=true;
     int credentialsCount = LoT().GetSettings()->GetInt(SystemSettings::SettingKey::WiFiCredentialsNumber);
-    lLog("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA: %d\n",credentialsCount);
+    lLog("WiFi: Credentials count: %d\n",credentialsCount);
     xSemaphoreGive( taskLock );
 }
 
