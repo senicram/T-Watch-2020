@@ -239,7 +239,7 @@ LunokIoT::LunokIoT() {
     InitLogs(); // need for stdout on usb-uart
 
     // announce myself with build information if serial debug is enabled
-    lSysLog("'компаньон' #%d//%s//\n",LUNOKIOT_BUILD_NUMBER,LUNOKIOT_KEY);
+    lSysLog("Release #%d//%s//\n",LUNOKIOT_BUILD_NUMBER,LUNOKIOT_KEY);
     // report initial memory
     FreeSpace();
     // Initialize lilygo lib (mandatory at this time)
@@ -366,7 +366,7 @@ LunokIoT::LunokIoT() {
     SqlLog("begin");
     SplashAnnounce("   User prefs   ");
     userTall= NVS.getInt("UserTall");        // get how high is the user?
-    if ( 0 == userTall ) { userTall = 120; } // almost midget value
+    if ( 0 == userTall ) { userTall = 184; } // almost midget value
     
     userMaleFemale = NVS.getInt("UserSex");  // maybe is better use "hip type A/B" due to no offend any gender
     if ( true == userMaleFemale ) { stepDistanceCm = userTall * WOMAN_STEP_PROPORTION; }

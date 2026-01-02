@@ -295,7 +295,7 @@ AboutApplication::AboutApplication() {
 }
 
 bool AboutApplication::Tick() {
-    UINextTimeout = millis()+UITimeout; // disable screen timeout
+    KeepScreenOn(); // disable screen timeout
     
     TemplateApplication::btnBack->Interact(touched,touchX,touchY);
     if ( millis() > nextStep) {

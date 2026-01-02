@@ -265,7 +265,7 @@ bool CalendarLogDetailApplication::Tick() {
                 self->logView->dirty=true;
                 lapse=millis()+2000;
             }*/
-            UINextTimeout = millis()+UITimeout; // disable screen timeout
+            self->KeepScreenOn(); // disable screen timeout
             return 0;
         },this);
         beginScrub=false;

@@ -60,7 +60,7 @@ BluetoothApplication::BluetoothApplication() {
 }
 
 bool BluetoothApplication::Tick() {
-    UINextTimeout = millis() + UITimeout; // no sleep in this screen
+    KeepScreenOn(); // no sleep in this screen
     btnRemoveBonding->enabled=LoT().GetBLE()->IsEnabled();
     btnGeneratePIN->enabled=LoT().GetBLE()->IsEnabled();
     btnBack->Interact(touched,touchX, touchY);

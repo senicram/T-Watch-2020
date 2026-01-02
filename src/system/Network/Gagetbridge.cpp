@@ -179,10 +179,11 @@ bool ParseBangleJSMessage(char * javascript) {
     bool containsSetTime=false;
 
     for (token = strtok(javascript, Separator); token; token = strtok(NULL, Separator)) {
-        if ( 0 == strncmp(token,SetTimeZoneCMD,strlen(SetTimeZoneCMD))) {
+        if ( 0 == strncmp(token, SetTimeZoneCMD, strnlen(SetTimeZoneCMD, sizeof(SetTimeZoneCMD) - 1))) {
             char numBuffer[30]={ 0 };
-            sprintf(numBuffer,"%s",token+strlen(SetTimeZoneCMD));
-            numBuffer[strlen(numBuffer)-1]=0; // remove last ")"
+            sprintf(numBuffer,"%s",token + strnlen(SetTimeZoneCMD, sizeof(SetTimeZoneCMD) - 1));
+            numBuffer[strnlen(numBuffer, sizeof(numBuffer))-1] = 0; // remove last ")"
+            
             int timezone = NVS.getInt("timezoneTime");
             int gbTimezone = atoi(numBuffer);
             lNetLog("Gadgetbridge: Current timezone: %+d offered: %+d\n",timezone,gbTimezone);
@@ -196,10 +197,11 @@ bool ParseBangleJSMessage(char * javascript) {
             }
             continue;
         }
-        if ( 0 == strncmp(token,SetTimeCMD,strlen(SetTimeCMD))) {
+        if ( 0 == strncmp(token, SetTimeCMD, sizeof(SetTimeCMD) - 1) ) {
             char numBuffer[10]={ 0 };
-            sprintf(numBuffer,"%s",token+strlen(SetTimeCMD));
-            numBuffer[strlen(numBuffer)-1]=0; // remove last ")"
+            sprintf(numBuffer,"%s",token + strnlen(SetTimeCMD, sizeof(SetTimeCMD) - 1));
+            numBuffer[strnlen(numBuffer, sizeof(numBuffer))-1]=0; // remove last ")"
+
             long newTime = atol(numBuffer);
             lNetLog("Gadgetbridge: setTime: '%s'\n",numBuffer);
             bool userWants = NVS.getInt("NTPBLEEnabled");

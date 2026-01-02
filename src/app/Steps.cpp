@@ -44,12 +44,12 @@
 
 //Ticker StepTicker;
 
-extern TTGOClass *ttgo; // ttgo lib
-uint8_t userTall = 197;
-uint32_t weekSteps[7] = { 0 }; // 0~6
-bool userMaleFemale = false;
-float stepDistanceCm = userTall * MAN_STEP_PROPORTION; // change man/woman @TODO this must be in settings
-uint8_t lastStepsDay = 8; // impossible day to force next trigger (0~6)
+extern          TTGOClass *ttgo;                                                // ttgo lib
+uint8_t         userTall        = NVS.getIntU8("userTall", 184);                // default 184cm
+uint32_t        weekSteps[7]    = { 0 };                                        // 0~6
+bool            userMaleFemale  = false;
+float           stepDistanceCm  = userTall * MAN_STEP_PROPORTION;               // change man/woman @TODO this must be in settings
+uint8_t         lastStepsDay    = 8;                                            // impossible day to force next trigger (0~6)
 //extern uint32_t lastBootStepCount;
 
 StepsApplication::~StepsApplication() {

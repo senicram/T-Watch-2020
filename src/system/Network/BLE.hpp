@@ -56,21 +56,22 @@
 
 // See the following for generating UUIDs:
 // https://www.uuidgenerator.net/
-#define BLE_CHARACTERISTIC_LUNOKIOT_VERSION        "95f0565b-b06c-4587-acc2-07f258b0f6f5"
-#define BLE_CHARACTERISTIC_LUNOKIOT_BATTERY_TEMP   "4b3cce41-1d16-49f8-a8e3-04adfe41c745"
-#define BLE_CHARACTERISTIC_LUNOKIOT_BMA_TEMP       "2c35cafc-6220-438c-82fc-ae131d532d12"
+#define BLE_CHARACTERISTIC_LUNOKIOT_VERSION      "95f0565b-b06c-4587-acc2-07f258b0f6f5"
+#define BLE_CHARACTERISTIC_LUNOKIOT_BATTERY_TEMP "4b3cce41-1d16-49f8-a8e3-04adfe41c745"
+#define BLE_CHARACTERISTIC_LUNOKIOT_BMA_TEMP     "2c35cafc-6220-438c-82fc-ae131d532d12"
 
-#define BLE_SERVICE_BATTERY           "180F"
-#define BLE_CHARACTERISTIC_BATTERY    "2A19"
-#define BLE_DESCRIPTOR_HUMAN_DESC     "2901"
-#define BLE_DESCRIPTOR_TYPE           "2904"
+#define BLE_SERVICE_BATTERY                      "180F"
+#define BLE_CHARACTERISTIC_BATTERY               "2A19"
+#define BLE_DESCRIPTOR_HUMAN_DESC                "2901"
+#define BLE_DESCRIPTOR_TYPE                      "2904"
 
-#define BLE_SERVICE_LUNOKIOT   "ab84d0b6-4cd2-4f4e-ae59-9a81203205f7"
-#define SERVICE_UART_UUID      "6E400001-B5A3-F393-E0A9-E50E24DCCA9E" // UART service UUID
-#define CHARACTERISTIC_UUID_RX "6E400002-B5A3-F393-E0A9-E50E24DCCA9E"
-#define CHARACTERISTIC_UUID_TX "6E400003-B5A3-F393-E0A9-E50E24DCCA9E"
+#define BLE_SERVICE_LUNOKIOT                     "ab84d0b6-4cd2-4f4e-ae59-9a81203205f7"
+#define SERVICE_UART_UUID                        "6E400001-B5A3-F393-E0A9-E50E24DCCA9E" // UART service UUID
+#define CHARACTERISTIC_UUID_RX                   "6E400002-B5A3-F393-E0A9-E50E24DCCA9E"
+#define CHARACTERISTIC_UUID_TX                   "6E400003-B5A3-F393-E0A9-E50E24DCCA9E"
+#define BLE_DEV_NAME_LEN                         MYNEWT_VAL_BLE_SVC_GAP_DEVICE_NAME_MAX_LENGTH
+const uint8_t BLECORE                            = CONFIG_BT_NIMBLE_PINNED_TO_CORE;
 
-const uint8_t BLECORE = CONFIG_BT_NIMBLE_PINNED_TO_CORE;
 
 enum BLEZoneLocations {
     UNKNOWN=0,
@@ -147,7 +148,7 @@ class LoTBLE {
         size_t                              gadgetBridgeBufferOffset       = 0;
         SemaphoreHandle_t BLEGadgetbridge = xSemaphoreCreateMutex(); // locked during UP/DOWN BLE service
     public:
-        char BTName[15] = { 0 }; // buffer for build the name like: "lunokIoT_69fa"
+        char BTName[BLE_DEV_NAME_LEN + 1] = { 0 }; // buffer for device name (e.g., "lunokIoT_69fa")
         LoTBLE();
         ~LoTBLE();
         const float GraceTime() { return GraceTimeSeconds; }

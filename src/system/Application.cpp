@@ -351,6 +351,10 @@ void LaunchApplication(LunokIoTApplication *instance, bool animation,bool synced
 
 }
 
+void LunokIoTApplication::KeepScreenOn() {
+    UINextTimeout = millis() + UITimeout;
+}
+
 void LunokIoTApplication::LowMemory() {
     lAppLog("LunokIoTApplication: LOW MEMORY received\n");
     // free last apps!!
@@ -442,8 +446,11 @@ SoftwareNumericKeyboard::SoftwareNumericKeyboard(void * destinationWidget) {
             if ( true == this->dotAdded ) { return; } // the number already have a dot, maintain until reset
             this->dotAdded =true;
         }
+        // @todo: magic number 255/256
         char * textEntryBack = (char*)malloc(256); // buffer
-        strcpy(textEntryBack,textEntry);
+        strncpy(textEntryBack, textEntry, 255);
+        textEntryBack[255] = '\0';
+
         //lLog("VALUE ADDED: '%s'\n",pushedBtn->label);
         sprintf(textEntry,"%s%s",textEntryBack,pushedBtn->label);
         free(textEntryBack);
@@ -798,7 +805,8 @@ bool SoftwareFreehandKeyboard::Tick() {
                 }
                 if ( 0 != seeChar ) {
                     char * textEntryBack = (char*)malloc(256); // buffer
-                    strcpy(textEntryBack,textEntry);
+                    strncpy(textEntryBack, textEntry, 255);
+                    textEntryBack[255] = '\0';
                     //lLog("VALUE ADDED: '%s'\n",pushedBtn->label);
                     sprintf(textEntry,"%s%c",textEntryBack,seeChar);
                     free(textEntryBack);

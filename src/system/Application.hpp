@@ -55,6 +55,7 @@ class LunokIoTApplication {
         virtual const char *AppName() = 0; // app title
         virtual const bool mustShowAsTask() { return true; } // false=Not show in task switcher (menus and intermediate views must be hidden)
         virtual void LowMemory(); // called when system fails to allocate memory (malloc)
+        void KeepScreenOn(); // reset screen timeout to prevent sleep
         //virtual RunApplicationCallback GetRunCallback();
 };
 typedef LunokIoTApplication* WatchfaceMaker();

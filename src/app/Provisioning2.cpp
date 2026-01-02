@@ -326,7 +326,7 @@ Provisioning2Application::Provisioning2Application() {
     Tick();
 }
 bool Provisioning2Application::Tick() {
-    UINextTimeout = millis()+UITimeout; // don't allow sleep by timeout on this app
+    KeepScreenOn(); // don't allow sleep by timeout on this app
 
     if ( provisioningStarted ) {
         if ( nullptr != currentQRRendered ) {

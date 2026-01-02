@@ -341,7 +341,7 @@ bool OTAUpdateApplication::Tick() {
     
     updateBtn->Interact(touched,touchX, touchY); 
 
-    UINextTimeout = millis()+UITimeout;  // dont allow screen sleep          
+    KeepScreenOn();  // dont allow screen sleep          
 
     if ( millis() > nextRefresh ) {
         canvas->fillSprite(backgroundColor); // use theme colors

@@ -252,8 +252,11 @@ class LBLEAdvertisedDeviceCallbacks: public BLEAdvertisedDeviceCallbacks {
         } // nu device
         lBLEDevice * newDev = new lBLEDevice();
         newDev->addr =  advertisedDevice->getAddress();
-        newDev->devName = (char *)ps_malloc(advertisedDevice->getName().length()+1);
-        sprintf(newDev->devName,"%s",advertisedDevice->getName().c_str());
+        // Limit device name length to BLE spec maximum
+        size_t nameLen = advertisedDevice->getName().length() < BLE_DEV_NAME_LEN ? advertisedDevice->getName().length() : BLE_DEV_NAME_LEN;
+        newDev->devName = (char *)ps_malloc(nameLen + 1);
+        
+        snprintf(newDev->devName, nameLen + 1, "%s", advertisedDevice->getName().c_str());
         lNetLog("BLE: New dev: '%s'(%s)\n",newDev->devName, newDev->addr.toString().c_str());
         if ( advertisedDevice->haveRSSI() ) {
             newDev->rssi = advertisedDevice->getRSSI();
@@ -306,14 +309,18 @@ class LBLEUARTCallbacks: public NimBLECharacteristicCallbacks {
         const char GadgetbridgeCommandBEGIN[] = "\x10GB(";
         LoTBLE * myHost = LoT().GetBLE();
 
-        if ( 0 == strncmp(receivedData,GadgetbridgeCommandBEGIN,strlen(GadgetbridgeCommandBEGIN))) {
+        if (0 == strncmp(receivedData, GadgetbridgeCommandBEGIN, sizeof(GadgetbridgeCommandBEGIN) - 1)) {
             lNetLog("BLE: UART: Begin Gadgetbridge GB command\n");
-            //bleBeingUsed=true;
-            gadgetbridgeCommandInProgress=true;
-            if ( nullptr != myHost->gadgetBridgeBuffer ) { free(myHost->gadgetBridgeBuffer); myHost->gadgetBridgeBuffer=nullptr; }
+            gadgetbridgeCommandInProgress = true;
+            
+            if (nullptr != myHost->gadgetBridgeBuffer) {
+                free(myHost->gadgetBridgeBuffer);
+                myHost->gadgetBridgeBuffer = nullptr;
+            }
+            
             myHost->gadgetBridgeBuffer = (char*)ps_malloc(gadgetBridgeBufferSize);
-            sprintf(myHost->gadgetBridgeBuffer,"%s",receivedData+strlen(GadgetbridgeCommandBEGIN)); // ignore cmd string
-            myHost->gadgetBridgeBufferOffset=strlen(myHost->gadgetBridgeBuffer);
+            snprintf(myHost->gadgetBridgeBuffer, gadgetBridgeBufferSize, "%s", receivedData + sizeof(GadgetbridgeCommandBEGIN) - 1);
+            myHost->gadgetBridgeBufferOffset = strnlen(myHost->gadgetBridgeBuffer, gadgetBridgeBufferSize);
             return;
         } else if ( gadgetbridgeCommandInProgress ) {
             if (nullptr == myHost->gadgetBridgeBuffer) {
@@ -325,7 +332,7 @@ class LBLEUARTCallbacks: public NimBLECharacteristicCallbacks {
             lNetLog("BLE: UART: Continue Gadgetbridge GB command\n");
             // copy to buffer
             for (int i = 0; i < rxValue.length(); i++) {
-                myHost->gadgetBridgeBuffer[myHost->gadgetBridgeBufferOffset]=rxValue[i];
+                myHost->gadgetBridgeBuffer[myHost->gadgetBridgeBufferOffset] = rxValue[i];
                 myHost->gadgetBridgeBufferOffset++;
 
             }
@@ -356,41 +363,47 @@ class LBLEUARTCallbacks: public NimBLECharacteristicCallbacks {
             lNetLog("BLE: UART: Begin BangleJS command\n");
             //bleBeingUsed=true;
             bangleCommandInProgress=true;
-            if ( nullptr != myHost->gadgetBridgeBuffer ) { free(myHost->gadgetBridgeBuffer); myHost->gadgetBridgeBuffer=nullptr; }
+
+            if ( nullptr != myHost->gadgetBridgeBuffer ) {
+                free(myHost->gadgetBridgeBuffer);
+                myHost->gadgetBridgeBuffer = nullptr;
+            }
+
             myHost->gadgetBridgeBuffer = (char*)ps_malloc(gadgetBridgeBufferSize);
-            sprintf(myHost->gadgetBridgeBuffer,"%s",receivedData+1); // bypass \x10
-            myHost->gadgetBridgeBufferOffset=strlen(myHost->gadgetBridgeBuffer);
+            snprintf(myHost->gadgetBridgeBuffer, gadgetBridgeBufferSize, "%s", receivedData + 1); // bypass \x10
+            myHost->gadgetBridgeBufferOffset = strlen(myHost->gadgetBridgeBuffer);
+
             return;
-        } else if ( bangleCommandInProgress ) {
+        } else if (bangleCommandInProgress) {
             if (nullptr == myHost->gadgetBridgeBuffer) {
-                bangleCommandInProgress=false;
+                bangleCommandInProgress = false;
                 lNetLog("BLE: UART: memory ERROR! (no buffer size for bangle command)\n");
-                myHost->gadgetBridgeBufferOffset=0;
+                myHost->gadgetBridgeBufferOffset = 0;
                 //bleBeingUsed=false;
                 return;
             }
             lNetLog("BLE: UART: Continue BangleJS command\n");
             // copy to buffer
             for (int i = 0; i < rxValue.length(); i++) {
-                myHost->gadgetBridgeBuffer[myHost->gadgetBridgeBufferOffset]=rxValue[i];
+                myHost->gadgetBridgeBuffer[myHost->gadgetBridgeBufferOffset] = rxValue[i];
                 myHost->gadgetBridgeBufferOffset++;
             }
             // check if is the end
-            const char *toLast=receivedData;
-            toLast+=strlen(receivedData)-strlen(BangleJSCommandEND);
-            if ( 0 == strcmp(BangleJSCommandEND,toLast)) {
-                myHost->gadgetBridgeBuffer[myHost->gadgetBridgeBufferOffset-1]=0; // correct eol
-                bangleCommandInProgress=false;
+            const char *toLast = receivedData;
+            toLast += strlen(receivedData) - strlen(BangleJSCommandEND);
+            if (0 == strcmp(BangleJSCommandEND, toLast)) {
+                myHost->gadgetBridgeBuffer[myHost->gadgetBridgeBufferOffset - 1] = 0; // correct eol
+                bangleCommandInProgress = false;
                 //bleBeingUsed=false;
                 lNetLog("BLE: UART: End BangleJS command\n");
 
                 // Parse outside
-                LoTBLE * myHost = LoT().GetBLE();
-                if( xSemaphoreTake( myHost->BLEGadgetbridge, LUNOKIOT_EVENT_IMPORTANT_TIME_TICKS) == pdTRUE )  {
-                    myHost->BLEBangleJSCommandPending=true;
-                    myHost->gadgetBridgeBufferOffset=0;
+                LoTBLE *myHost = LoT().GetBLE();
+                if (xSemaphoreTake(myHost->BLEGadgetbridge, LUNOKIOT_EVENT_IMPORTANT_TIME_TICKS) == pdTRUE) {
+                    myHost->BLEBangleJSCommandPending = true;
+                    myHost->gadgetBridgeBufferOffset = 0;
                     // data avaliable on gadgetBridgeBuffer
-                    xSemaphoreGive( myHost->BLEGadgetbridge );
+                    xSemaphoreGive(myHost->BLEGadgetbridge);
                 }
             }
             return;
@@ -399,7 +412,7 @@ class LBLEUARTCallbacks: public NimBLECharacteristicCallbacks {
         // no know howto parse... show as debug
         lNetLog("BLE: UART Received Value: ");
         for (int i = 0; i < rxValue.length(); i++) { //ignore \0
-            lLog("%c(0x%02x) ",rxValue[i],rxValue[i]);
+            lLog("%c(0x%02x) ", rxValue[i], rxValue[i]);
         }
         lLog("\n");
     }
@@ -773,7 +786,7 @@ LoTBLE::LoTBLE() {
     // Set BLE name
     uint8_t BLEAddress[6];                  // 6 octets are the BLE address
     esp_read_mac(BLEAddress,ESP_MAC_BT);    // get from esp-idf :-*
-    sprintf(BTName,"lunokIoT_%02x%02x", BLEAddress[4], BLEAddress[5]); // add last MAC bytes as name
+    snprintf(BTName, sizeof(BTName), "lunokIoT_%02x%02x", BLEAddress[4], BLEAddress[5]); // add last MAC bytes as name
     lNetLog("BLE: %p Device name: '%s'\n",this,BTName); // notify to log
 
     if ( false == enabled ) { 

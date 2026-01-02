@@ -28,17 +28,17 @@
 
 class StepsApplication: public TemplateApplication {
     private:
-        unsigned long nextRedraw=0;
+        unsigned long           nextRedraw    = 0;
     public:
-        int32_t maxVal = 0;
-        int32_t minVal = 0;
-        int32_t milestone = 0;
+        int32_t                 maxVal        = 0;
+        int32_t                 minVal        = 0;
+        int32_t                 milestone     = 0;
         const char *AppName() override { return "Step counter"; };
         void CreateStats();
-        ButtonImageXBMWidget * btnSetup = nullptr;
-        ButtonImageXBMWidget * btnMilestone = nullptr;
-        GraphWidget * weekGraph = nullptr;
-        GraphWidget * activityGraph = nullptr;
+        ButtonImageXBMWidget  * btnSetup      = nullptr;
+        ButtonImageXBMWidget  * btnMilestone  = nullptr;
+        GraphWidget           * weekGraph     = nullptr;
+        GraphWidget           * activityGraph = nullptr;
         StepsApplication();
         ~StepsApplication();
         bool Tick();

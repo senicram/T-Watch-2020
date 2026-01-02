@@ -63,15 +63,9 @@ extern const PROGMEM uint8_t boot_sound_muji_end[] asm("_binary_asset_boot_sound
 extern const PROGMEM uint8_t sleep_sound_muji_start[] asm("_binary_asset_sleep_sound_muji_mp3_start");
 extern const PROGMEM uint8_t sleep_sound_muji_end[] asm("_binary_asset_sleep_sound_muji_mp3_end");
 
-void SplashFanfare() {
-#ifdef LUNOKIOT_SILENT_BOOT
-    lUILog("Audio: Not initialized due Silent boot is enabled\n");
-    //delay(1200); // the delay of audio
-    return;
-#endif
-    //unsigned long begin=millis();
-    // Audio fanfare x'D
-    lUILog("Audio: Initialize\n");
+// Background task for playing boot fanfare audio
+static void SplashFanfareTask(void *param) {
+    lUILog("Audio: Initialize (background task)\n");
     
     ttgo->enableAudio();
 
@@ -81,13 +75,12 @@ void SplashFanfare() {
     AudioOutputI2S *out;
     AudioFileSourceID3 *id3;
 
-    // file = new AudioFileSourcePROGMEM(boot_sound_start, (uint32_t)(boot_sound_end-boot_sound_start));
     file = new AudioFileSourcePROGMEM(boot_sound_muji_start, (uint32_t)(boot_sound_muji_end-boot_sound_muji_start));
 
     id3 = new AudioFileSourceID3(file);
     out = new AudioOutputI2S();
     out->SetPinout(TWATCH_DAC_IIS_BCK, TWATCH_DAC_IIS_WS, TWATCH_DAC_IIS_DOUT);
-    lUILog("Audio: MP3 boot sound\n");
+    lUILog("Audio: MP3 boot sound (background)\n");
     mp3 = new AudioGeneratorMP3();
     mp3->begin(id3, out);
     while (true) {
@@ -96,9 +89,10 @@ void SplashFanfare() {
                 mp3->stop();
             }
         } else {
-            lUILog("Audio: MP3 done\n");
+            lUILog("Audio: MP3 done (background task ending)\n");
             break;
         }
+        vTaskDelay(1); // yield to other tasks
     }
     delete file;
     delete id3;
@@ -107,7 +101,26 @@ void SplashFanfare() {
 
     i2s_driver_uninstall(I2S_NUM_0);
     ttgo->disableAudio();
-    //lLog("FANFARE TIME: %d\n",millis()-begin);
+    
+    vTaskDelete(NULL); // self-delete task
+}
+
+void SplashFanfare() {
+#ifdef LUNOKIOT_SILENT_BOOT
+    lUILog("Audio: Not initialized due Silent boot is enabled\n");
+    return;
+#endif
+    // Launch audio playback in background task (non-blocking)
+    xTaskCreatePinnedToCore(
+        SplashFanfareTask,      // Task function
+        "bootSound",            // Task name
+        4096,                   // Stack size (bytes)
+        NULL,                   // Parameters
+        tskIDLE_PRIORITY + 1,   // Priority (low, background)
+        NULL,                   // Task handle (not needed)
+        0                       // Run on core 0 (not main UI core)
+    );
+    lUILog("Audio: Boot sound started in background\n");
 }
 
 

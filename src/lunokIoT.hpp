@@ -82,19 +82,20 @@ class LunokIoT {
         LunokIoT(LunokIoT&&) = delete;                  // Move construct
         LunokIoT& operator=(LunokIoT const&) = delete;  // Copy assign
         LunokIoT& operator=(LunokIoT &&) = delete;      // Move assign
-        bool LittleFSReady=false;
-        size_t selectedWatchFace=0;
+
+        bool   LittleFSReady      = false;
+        size_t selectedWatchFace  = 0;
     protected:
         LunokIoT();
         ~LunokIoT() {}; // implemented here ¿what kind of singleton.... x'D
     private:
-        const float BootWifiPerformSeconds = 10; // time to first wifi tasks launch
-        Ticker BootWifiPerform; // used to launch tasks on first boot faster than "one cycle"
-        LoTWiFi * wifi=nullptr; // used internally
-        LoTBLE * ble=nullptr;
-        SystemSettings * settings=nullptr;
-        bool normalBoot = false;
-        bool fromDeepSleep = false;
+        const float      BootWifiPerformSeconds = 10;      // time to first wifi tasks launch
+        Ticker           BootWifiPerform;                  // used to launch tasks on first boot faster than "one cycle"
+        LoTWiFi *        wifi                   = nullptr; // used internally
+        LoTBLE *         ble                    = nullptr;
+        SystemSettings * settings               = nullptr;
+        bool             normalBoot             = false;
+        bool             fromDeepSleep          = false;
         //bool NVSReady=false;
         void InitLogs();
         void InstallRotateLogs();

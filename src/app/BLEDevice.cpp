@@ -86,7 +86,7 @@ BLEDeviceMonitorApplication::BLEDeviceMonitorApplication(uint16_t baseColor,char
 }
 
 bool BLEDeviceMonitorApplication::Tick() {
-    UINextTimeout = millis() + UITimeout; // disable screen timeout on this app
+    KeepScreenOn(); // disable screen timeout on this app
     TemplateApplication::btnBack->Interact(touched,touchX,touchY); // force check (speedup response)
     if (millis() > nextRedraw) {
         rotateVal += 1;

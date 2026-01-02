@@ -117,7 +117,7 @@ BLEMonitorApplication::BLEMonitorApplication() {
 }
 
 bool BLEMonitorApplication::Tick() {
-    UINextTimeout = millis() + UITimeout; // no sleep here
+    KeepScreenOn(); // no sleep here
     if (millis() > nextRedraw) {
         rotateVal += 1;
         canvas->fillSprite(TFT_DARKGREY);

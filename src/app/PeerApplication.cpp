@@ -264,7 +264,7 @@ PeerApplication::~PeerApplication() {
 }
 
 bool PeerApplication::Tick() {
-    UINextTimeout = millis()+UITimeout; // disable screen timeout during this app run
+    KeepScreenOn(); // disable screen timeout during this app run
 
     // put your interacts here:
     //mywidget->Interact(touched,touchX,touchY);
