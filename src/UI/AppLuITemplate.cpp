@@ -108,8 +108,9 @@ LuIStandardLayout TemplateLuIApplication::CreateStandardLayout(
     // Create back button
     layout.backButton = CreateBackButton(true, 10);
     
-    // Add back button to bottom left, empty space on right
+    // Add back button to bottom left
     layout.bottomButtonContainer->AddChild(layout.backButton, bottomQuota);
+    // Add empty space on right (caller can replace this with custom content if needed)
     layout.bottomButtonContainer->AddChild(nullptr, viewQuota);
     
     return layout;

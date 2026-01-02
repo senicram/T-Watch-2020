@@ -31,13 +31,13 @@ LuIDialogApplication::LuIDialogApplication() {
     LuIStandardLayout layout = CreateStandardLayout(1.7, 0.3);
     screen = layout.screen;
     
-    // Create main view with 2 horizontal slots (text + response buttons)
-    Container * viewContainer = new Container(LuI_Horizontal_Layout, 2);
+    // Create dialog contents container with 2 horizontal slots (text + response buttons)
+    Container * dialogContainer = new Container(LuI_Horizontal_Layout, 2);
 
     dialogContents = new Text(""); 
-    viewContainer->AddChild(dialogContents,1.4);
+    dialogContainer->AddChild(dialogContents, 1.4);
 
-    Container * responseContainer = new Container(LuI_Vertical_Layout,2);
+    Container * responseContainer = new Container(LuI_Vertical_Layout, 2);
 
     noButton = new LuI::Button(); // a basic default button
     noButton->AddChild(new Text("No"));
@@ -45,10 +45,10 @@ LuIDialogApplication::LuIDialogApplication() {
     yesButton = new LuI::Button(); // a basic default button
     yesButton->AddChild(new Text("Yes"));
     responseContainer->AddChild(yesButton);
-    viewContainer->AddChild(responseContainer,0.6);
+    dialogContainer->AddChild(responseContainer, 0.6);
 
-    // Replace the view container in the layout
-    layout.screen->AddChild(viewContainer, 1.7);
+    // Add dialog container to the view container
+    layout.viewContainer->AddChild(dialogContainer);
 
     AddChild(screen); // add root to view
     directDraw=true;

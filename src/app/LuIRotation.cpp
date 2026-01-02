@@ -128,42 +128,14 @@ void LuIRotateApplication::DoScreenRotation(uint8_t from, uint8_t to) {
 }
 
 LuIRotateApplication::LuIRotateApplication() {
-    directDraw=false; // disable direct draw meanwhile build the UI
-    // fill view with background color
-    canvas->fillSprite(ThCol(background)); // use theme colors
-
-    /// create root container with two slots horizontal
-    Container * screen = new Container(LuI_Horizontal_Layout,2);
-    // bottom buttons container
-    Container * bottomButtonContainer = new Container(LuI_Vertical_Layout,2);
-
-    // main view space
-    Container * viewContainer = new Container(LuI_Horizontal_Layout,1);
-
-    // if use quota, all the slot quotas must sum equal the total number of elements
-    // example: default quota in 2 controls result 50/50% of view space with 1.0 of quota everyone (2.0 in total)
-
-    screen->AddChild(viewContainer,1.65);
-    // add bottom button bar shirnked
-    screen->AddChild(bottomButtonContainer,0.35);
-
-    // add back button to dismiss
-    LuI::Button *backButton = new LuI::Button(LuI_Vertical_Layout,1,NO_DECORATION);
-    backButton->border=10;
-    backButton->tapCallback=[](void * obj){ LaunchWatchface(); }; // callback when tap
-    // load icon in XBM format
-    XBM * backButtonIcon = new XBM(img_backscreen_24_width,img_backscreen_24_height,img_backscreen_24_bits);
-    // put the icon inside the button
-    backButton->AddChild(backButtonIcon);
-    // shrink button to left and empty control oversized (want button on left bottom)
-    bottomButtonContainer->AddChild(backButton,0.35);
-    bottomButtonContainer->AddChild(nullptr,1.65);
+    // Create standard layout with view container and back button bar
+    LuIStandardLayout layout = CreateStandardLayout();
 
     // add smartwatch image to ilustrate the orientation
     Container * innerdiv = new Container(LuI_Horizontal_Layout,2);
     innerdiv->AddChild(new Text("This side up",TFT_WHITE,false,1,&FreeMonoBold12pt7b),0.6);
     innerdiv->AddChild(new Image(img_landscape_200.width,img_landscape_200.height,img_landscape_200.pixel_data,true),1.4);
-    viewContainer->AddChild(innerdiv);
+    layout.viewContainer->AddChild(innerdiv);
 
     ScreenRotateEvent = new EventKVO([&, this](){
         uint8_t lastRotation = tft->getRotation();
@@ -177,7 +149,7 @@ LuIRotateApplication::LuIRotateApplication() {
             xSemaphoreGive( UISemaphore );
         }
     },BMA_EVENT_DIRECTION);
-    AddChild(screen);
+    AddChild(layout.screen);
     directDraw=true; // allow controls to direct redraw itself instead of push whole view Sprite
     // Thats all! the app is running
 }

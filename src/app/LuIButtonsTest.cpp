@@ -35,14 +35,16 @@ DebugLuIButtonsApplication::DebugLuIButtonsApplication() {
     // Use slightly different quotas to match original behavior
     LuIStandardLayout layout = CreateStandardLayout(1.7, 0.3);
     
-    // Reconfigure view container for 2 vertical slots (left and right columns)
-    Container * viewContainer = new Container(LuI_Vertical_Layout, 2);
-    
     // creates the two columns of sample buttons
     Container * leftContainer= new Container(LuI_Horizontal_Layout,3);
-    viewContainer->AddChild(leftContainer);
     Container * rightContainer= new Container(LuI_Horizontal_Layout,3);
-    viewContainer->AddChild(rightContainer);
+    
+    // The layout.viewContainer has 1 slot by default, we need 2 slots
+    // Create a new container with 2 slots for left/right columns
+    Container * columnsContainer = new Container(LuI_Vertical_Layout, 2);
+    columnsContainer->AddChild(leftContainer);
+    columnsContainer->AddChild(rightContainer);
+    layout.viewContainer->AddChild(columnsContainer);
 
     // fill viewContainer with different type of buttons
     
@@ -103,9 +105,6 @@ DebugLuIButtonsApplication::DebugLuIButtonsApplication() {
     Button3d->AddChild(sparklesView,0.8);
     Button3d->AddChild(new Text("Home"),1.2);
     rightContainer->AddChild(Button3d);
-
-    // Replace the view container in the layout
-    layout.screen->AddChild(viewContainer, 1.7);
 
     AddChild(layout.screen); // add root to view
     sparklesView->dirty=true; // why this?
