@@ -28,6 +28,7 @@
 #include "../UI/controls/Button.hpp"
 #include "../UI/controls/XBM.hpp"
 #include "../UI/controls/Check.hpp"
+#include "../resources.hpp"
 
 extern bool UILongTapOverride;
 
@@ -61,4 +62,55 @@ void TemplateLuIApplication::AddChild(INOUT LuI::Container *control ) {
     canvas->setPivot(0,0);
     currentView->pushRotated(canvas,0,Drawable::MASK_COLOR); // push to app view
     lAppLog("ADDCHILD END CONSTRUCTOR HERE\n");
+}
+
+LuI::Button * TemplateLuIApplication::CreateBackButton(bool useSmallIcon, uint8_t border) {
+    LuI::Button *backButton = new LuI::Button(LuI_Vertical_Layout, 1, NO_DECORATION);
+    backButton->border = border;
+    backButton->tapCallback = [](void * obj) { LaunchWatchface(); };
+    
+    LuI::XBM *backButtonIcon;
+    if (useSmallIcon) {
+        backButtonIcon = new LuI::XBM(img_backscreen_24_width, img_backscreen_24_height, img_backscreen_24_bits);
+    } else {
+        backButtonIcon = new LuI::XBM(img_backscreen_42_width, img_backscreen_42_height, img_backscreen_42_bits);
+    }
+    backButton->AddChild(backButtonIcon);
+    
+    return backButton;
+}
+
+LuIStandardLayout TemplateLuIApplication::CreateStandardLayout(
+    float viewQuota,
+    float bottomQuota,
+    uint16_t backgroundColor
+) {
+    LuIStandardLayout layout;
+    
+    // Use theme background if 0xFFFF is passed (marker for default)
+    uint16_t bgColor = (backgroundColor == 0xFFFF) ? ThCol(background) : backgroundColor;
+    canvas->fillSprite(bgColor);
+    
+    // Create root container with two slots horizontal
+    layout.screen = new LuI::Container(LuI_Horizontal_Layout, 2);
+    
+    // Bottom buttons container
+    layout.bottomButtonContainer = new LuI::Container(LuI_Vertical_Layout, 2);
+    
+    // Main view space
+    layout.viewContainer = new LuI::Container(LuI_Horizontal_Layout, 1);
+    
+    // Add main view with specified quota
+    layout.screen->AddChild(layout.viewContainer, viewQuota);
+    // Add bottom button bar
+    layout.screen->AddChild(layout.bottomButtonContainer, bottomQuota);
+    
+    // Create back button
+    layout.backButton = CreateBackButton(true, 10);
+    
+    // Add back button to bottom left, empty space on right
+    layout.bottomButtonContainer->AddChild(layout.backButton, bottomQuota);
+    layout.bottomButtonContainer->AddChild(nullptr, viewQuota);
+    
+    return layout;
 }
