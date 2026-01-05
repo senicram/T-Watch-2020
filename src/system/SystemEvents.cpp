@@ -416,14 +416,32 @@ static void DoSleepTask(void *args) {
 
 void DoSleep() {
     DeepSleepPoseTimer.detach();
-    if (systemSleep) { return; }
+
+    if (systemSleep) {
+        return;
+    }
+
     systemSleep = true;
-    BaseType_t intTaskOk = xTaskCreatePinnedToCore(DoSleepTask, "lSleepTask", LUNOKIOT_TASK_STACK_SIZE, NULL,tskIDLE_PRIORITY+1, NULL,SYSTEMCORE);
-    if ( pdPASS == intTaskOk ) { return; }
+
+    BaseType_t intTaskOk = xTaskCreatePinnedToCore(
+        DoSleepTask,
+        "lSleepTask",
+        LUNOKIOT_TASK_STACK_SIZE,
+        NULL,
+        tskIDLE_PRIORITY + 1,
+        NULL,
+        SYSTEMCORE
+    );
+
+    if (pdPASS == intTaskOk) {
+        return;
+    }
+
     systemSleep = false;
     lSysLog("ERROR: cannot launch DoSleep!!!\n");
-    // launch timed DoSleep
-    TimedDoSleep.once(3,[]() { // get sleep in some seconds if no screen is on
+
+    // Launch timed DoSleep retry after 3 seconds if screen is off
+    TimedDoSleep.once(3, []() {
         if (false == ttgo->bl->isOn()) {
             lEvLog("DoSleep Retry...\n");
             DoSleep();
@@ -1567,7 +1585,9 @@ static void BMAInterruptController(void *args) {
             taskENTER_CRITICAL(&BMAMux);
             irqBMA = false;
             taskEXIT_CRITICAL(&BMAMux);*/
-            lLog("@TODO unknown unprocessed interrupt call from BMA423!\n");
+            uint16_t irqStatus = ttgo->bma->getIrqStatus();
+            lLog("@TODO unknown unprocessed interrupt call from BMA423! IRQ status: 0x%04X\\n", irqStatus);
+            // Bits: 0x01=WAKEUP(double_tap), 0x02=STEP_CNTR, 0x04=TILT, 0x08=ACTIVITY, 0x20=ANY_NO_MOTION
         //}
         xSemaphoreGive(I2cMutex);
     }

@@ -45,7 +45,7 @@ const IconMenuEntry LuIGamesMenuItems[] = {
     {"LunoNoid",img_mainmenu_lunonoid_bits, img_mainmenu_lunonoid_height, img_mainmenu_lunonoid_width, [](void *unused) { LaunchApplication(new LunoNoidGameApplication()); } },
     {"GofLife",img_mainmenu_glider_bits, img_mainmenu_glider_height, img_mainmenu_glider_width, [&](IGNORE_PARAM) { LaunchApplication(new LuIDemoGameOfLifeApplication()); } },
     {"Screen",img_mainmenu_debug_bits, img_mainmenu_debug_height, img_mainmenu_debug_width, [&](IGNORE_PARAM) { LaunchApplication(new ScreenTestApplication()); } },
-    {"LuIDemos",img_mainmenu_debug_bits, img_mainmenu_debug_height, img_mainmenu_debug_width, [](IGNORE_PARAM) { LaunchApplication(new LuiExperimentApplication()); } },
+    //{"LuIDemos",img_mainmenu_debug_bits, img_mainmenu_debug_height, img_mainmenu_debug_width, [](IGNORE_PARAM) { LaunchApplication(new LuiExperimentApplication()); } },
 };
 int LuIGamesMenuItemsNumber = sizeof(LuIGamesMenuItems) / sizeof(LuIGamesMenuItems[0])-1;
 

@@ -255,12 +255,17 @@ bool WatchfaceSquare::Tick() {
           }
         }
 
+        uint32_t btColor = TFT_DARKGREY;
         if (LoT().GetBLE()->IsEnabled()) {
           unsigned char *img = img_bluetooth_24_bits;  // bluetooth logo only icon
+          btColor = TFT_BLUE;
+
           if (LoT().GetBLE()->Clients() > 0) {
             img = img_bluetooth_peer_24_bits;
+            btColor = ThCol(highlight);  // bluetooth connected with peer icon
           }  // bluetooth with peer icon
-          canvas->drawXBitmap(MARGIN_LFT, 205, img, img_bluetooth_24_width, img_bluetooth_24_height, ThCol(text));
+
+          canvas->drawXBitmap(MARGIN_LFT, 205, img, img_bluetooth_24_width, img_bluetooth_24_height, btColor);
         }
 
         nextRefresh = millis() + FPS_8; // 8 FPS is enough for GUI

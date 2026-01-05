@@ -115,6 +115,23 @@ extern std::list <lBLEDevice*>BLEKnowDevices;
 class LBLEUARTCallbacks;
 class LBLEServerCallbacks;
 
+/**
+ * @brief Represents an active BLE client connection to a remote device
+ * 
+ * This structure holds information about an outbound BLE connection,
+ * allowing multiple applications to share the same connection.
+ */
+struct BLEClientConnection {
+    NimBLEClient              * pClient       = nullptr;    // The NimBLE client handle
+    NimBLEAddress               address;                     // Remote device address
+    char                        deviceName[BLE_DEV_NAME_LEN + 1] = { 0 };  // Remote device name
+    unsigned long               connectedAt   = 0;          // millis() when connected
+    
+    bool isConnected() const { 
+        return pClient != nullptr && pClient->isConnected(); 
+    }
+};
+
 class LoTBLE {
     friend LBLEUARTCallbacks;
     friend LBLEServerCallbacks;
@@ -147,6 +164,17 @@ class LoTBLE {
         char *                              gadgetBridgeBuffer             = nullptr;
         size_t                              gadgetBridgeBufferOffset       = 0;
         SemaphoreHandle_t BLEGadgetbridge = xSemaphoreCreateMutex(); // locked during UP/DOWN BLE service
+        
+        // BLE Client (outbound connections) - shared across applications
+        BLEClientConnection                 clientConnection_;
+        SemaphoreHandle_t                   clientLock_                    = xSemaphoreCreateMutex();
+        
+        // BLE Scanning - shared across applications
+        NimBLEScan                        * pBLEScan_                      = nullptr;
+        NimBLEScanResults                   scanResults_;
+        bool                                scanComplete_                  = false;
+        SemaphoreHandle_t                   scanLock_                      = xSemaphoreCreateMutex();
+        
     public:
         char BTName[BLE_DEV_NAME_LEN + 1] = { 0 }; // buffer for device name (e.g., "lunokIoT_69fa")
         LoTBLE();
@@ -163,6 +191,58 @@ class LoTBLE {
         bool IsAdvertising();
         size_t Clients();
         bool BLESendUART(const char * data);
+        
+        // BLE Client management (outbound connections to remote devices)
+        /**
+         * @brief Connect to a remote BLE device by address
+         * @param address The BLE address of the device to connect to
+         * @param deviceName Optional device name for logging/display
+         * @return true if connection successful, false otherwise
+         */
+        bool ConnectToDevice(const NimBLEAddress& address, const char* deviceName = nullptr);
+        
+        void DisconnectClient();
+        bool IsClientConnected();
+        BLEClientConnection* GetClientConnection();
+        
+        /**
+         * @brief Get a characteristic from the connected device
+         * @param serviceUUID The service UUID
+         * @param charUUID The characteristic UUID
+         * @return Pointer to the characteristic, or nullptr if not found/connected
+         */
+        NimBLERemoteCharacteristic* GetClientCharacteristic(const NimBLEUUID& serviceUUID, const NimBLEUUID& charUUID);
+        
+        // BLE Scanning management (shared across applications)
+        /**
+         * @brief Start a BLE scan for nearby devices
+         * @param duration Scan duration in seconds
+         * @param activeScan Use active scanning (faster but more power)
+         * @return true if scan started successfully, false otherwise
+         */
+        bool StartScan(uint8_t duration = 8, bool activeScan = true);
+        
+        /**
+         * @brief Stop any ongoing BLE scan
+         */
+        void StopScan();
+        
+        /**
+         * @brief Check if a scan has completed
+         * @return true if scan completed, false if still scanning or not started
+         */
+        bool IsScanComplete();
+        
+        /**
+         * @brief Get the results from the last completed scan
+         * @return Reference to the scan results
+         */
+        NimBLEScanResults& GetScanResults();
+        
+        /**
+         * @brief Clear scan complete flag (call after processing results)
+         */
+        void ClearScanComplete();
 };
 
 #endif

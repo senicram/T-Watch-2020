@@ -423,8 +423,10 @@ class LBLEUARTCallbacks: public NimBLECharacteristicCallbacks {
  * @return true if BLE device is actively scanning for nearby devices, false otherwise
  */
 bool LoTBLE::IsScanning() {
-    NimBLEScan * scan = NimBLEDevice::getScan();
-    if ( nullptr == scan ) { return false; }
+    NimBLEScan *scan = NimBLEDevice::getScan();
+    if (nullptr == scan) {
+        return false;
+    }
     return scan->isScanning();
 }
 
@@ -785,15 +787,16 @@ LoTBLE::LoTBLE() {
 
     // Set BLE name
     uint8_t BLEAddress[6];                  // 6 octets are the BLE address
-    esp_read_mac(BLEAddress,ESP_MAC_BT);    // get from esp-idf :-*
-    snprintf(BTName, sizeof(BTName), "lunokIoT_%02x%02x", BLEAddress[4], BLEAddress[5]); // add last MAC bytes as name
-    lNetLog("BLE: %p Device name: '%s'\n",this,BTName); // notify to log
+    esp_read_mac(BLEAddress, ESP_MAC_BT);    // get from esp-idf :-*
+    snprintf(BTName, sizeof(BTName), "Watch"); // add last MAC bytes as name
+    lNetLog("BLE: %p Device name: '%s'\n", this, BTName); // notify to log
 
     if ( false == enabled ) { 
         Disable();
         lNetLog("BLE: %p User settings don't agree\n",this);
         return;
     }
+    NimBLEDevice::init(std::string(BTName));
     Enable();
 
 }
@@ -836,7 +839,7 @@ LoTBLE::~LoTBLE() {
  */
 void LoTBLE::Enable() {
     xSemaphoreTake( taskLock, LUNOKIOT_EVENT_MANDATORY_TIME_TICKS);
-    enabled=true;
+    enabled = true;
     SqlLog("BLE: enabled");
     xSemaphoreGive( taskLock );
 }
@@ -849,7 +852,7 @@ void LoTBLE::Enable() {
  */
 void LoTBLE::Disable() {
     xSemaphoreTake( taskLock, LUNOKIOT_EVENT_MANDATORY_TIME_TICKS);
-    enabled=false;
+    enabled = false;
     SqlLog("BLE: disabled");
     xSemaphoreGive( taskLock );
 }
@@ -863,7 +866,7 @@ void LoTBLE::Disable() {
 bool LoTBLE::IsEnabled() {
     bool response;
     xSemaphoreTake( taskLock, LUNOKIOT_EVENT_MANDATORY_TIME_TICKS);
-    response=enabled;
+    response = enabled;
     xSemaphoreGive( taskLock );
     return response;
 }
@@ -877,7 +880,7 @@ bool LoTBLE::IsEnabled() {
 bool LoTBLE::InUse() {
     bool response;
     xSemaphoreTake( taskLock, LUNOKIOT_EVENT_MANDATORY_TIME_TICKS);
-    response=running;
+    response = running;
     xSemaphoreGive( taskLock );
     return response;
 
@@ -938,7 +941,241 @@ bool LoTBLE::BLESendUART(const char * data) {
     return true;
 }
 
+/**
+ * @brief Connect to a remote BLE device as a client
+ * @param address The BLE address of the device to connect to
+ * @param deviceName Optional human-readable device name for logging
+ * @return true if connection successful, false otherwise
+ * 
+ * Creates a new NimBLE client and connects to the specified device.
+ * Only one outbound connection is supported at a time - existing
+ * connections will be disconnected first.
+ */
+bool LoTBLE::ConnectToDevice(const NimBLEAddress& address, const char* deviceName) {
+    /*
+    if (!IsEnabled()) {
+        lNetLog("BLE: %p Cannot connect - BLE is disabled\n", this);
+        return false;
+    }
+    */
+    
+    if (xSemaphoreTake(clientLock_, LUNOKIOT_EVENT_IMPORTANT_TIME_TICKS) != pdTRUE) {
+        lNetLog("BLE: %p Failed to acquire client lock\n", this);
+        return false;
+    }
+    
+    // Disconnect existing connection if any
+    if (clientConnection_.pClient != nullptr) {
+        lNetLog("BLE: %p Disconnecting existing client before new connection\n", this);
+        
+        NimBLEDevice::deleteClient(clientConnection_.pClient);
+        clientConnection_.pClient = nullptr;
+    }
+    
+    // Create new client
+    clientConnection_.pClient = NimBLEDevice::createClient();
+    if (clientConnection_.pClient == nullptr) {
+        lNetLog("BLE: %p Failed to create client\n", this);
+        xSemaphoreGive(clientLock_);
+        return false;
+    }
+    
+    // Attempt connection
+    lNetLog("BLE: %p Connecting to device: %s\n", this, address.toString().c_str());
+    if (!clientConnection_.pClient->connect(address)) {
+        lNetLog("BLE: %p Failed to connect to device: %s\n", this, address.toString().c_str());
+        NimBLEDevice::deleteClient(clientConnection_.pClient);
+        clientConnection_.pClient = nullptr;
+        xSemaphoreGive(clientLock_);
+        return false;
+    }
+    
+    // Store connection info
+    clientConnection_.address = address;
+    clientConnection_.connectedAt = millis();
+    if (deviceName != nullptr) {
+        strncpy(clientConnection_.deviceName, deviceName, BLE_DEV_NAME_LEN);
+        clientConnection_.deviceName[BLE_DEV_NAME_LEN] = '\0';
+    } else {
+        clientConnection_.deviceName[0] = '\0';
+    }
+    
+    lNetLog("BLE: %p Connected to device: %s [%s]\n", this, 
+            clientConnection_.deviceName, address.toString().c_str());
+    
+    xSemaphoreGive(clientLock_);
+    return true;
+}
 
+/**
+ * @brief Disconnect from the currently connected remote device
+ * 
+ * Cleanly disconnects and destroys the client connection.
+ * Safe to call even if not connected.
+ */
+void LoTBLE::DisconnectClient() {
+    if (xSemaphoreTake(clientLock_, LUNOKIOT_EVENT_IMPORTANT_TIME_TICKS) != pdTRUE) {
+        lNetLog("BLE: %p Failed to acquire client lock for disconnect\n", this);
+        return;
+    }
+    
+    if (clientConnection_.pClient != nullptr) {
+        lNetLog("BLE: %p Disconnecting client from: %s\n", this, 
+                clientConnection_.address.toString().c_str());
+        
+        NimBLEDevice::deleteClient(clientConnection_.pClient);
+        clientConnection_.pClient = nullptr;
+        clientConnection_.deviceName[0] = '\0';
+        clientConnection_.connectedAt = 0;
+    }
+    
+    xSemaphoreGive(clientLock_);
+}
+
+/**
+ * @brief Check if there's an active outbound client connection
+ * @return true if connected to a remote device as a client
+ */
+bool LoTBLE::IsClientConnected() {
+    if (xSemaphoreTake(clientLock_, LUNOKIOT_EVENT_FAST_TIME_TICKS) != pdTRUE) {
+        return false;
+    }
+    bool connected = clientConnection_.isConnected();
+    xSemaphoreGive(clientLock_);
+    return connected;
+}
+
+/**
+ * @brief Get the current client connection for direct access
+ * @return Pointer to the client connection struct, or nullptr if not connected
+ * 
+ * @warning The returned pointer should only be used while holding
+ *          a reference that ensures the connection remains valid
+ */
+BLEClientConnection* LoTBLE::GetClientConnection() {
+    if (!IsClientConnected()) {
+        return nullptr;
+    }
+    return &clientConnection_;
+}
+
+/**
+ * @brief Get a characteristic from the connected remote device
+ * @param serviceUUID The service UUID containing the characteristic
+ * @param charUUID The characteristic UUID to retrieve
+ * @return Pointer to the remote characteristic, or nullptr if not found
+ * 
+ * Convenience method to access characteristics on the connected device.
+ * Returns nullptr if not connected or if service/characteristic not found.
+ */
+NimBLERemoteCharacteristic* LoTBLE::GetClientCharacteristic(const NimBLEUUID& serviceUUID, const NimBLEUUID& charUUID) {
+    if (!IsClientConnected()) {
+        lNetLog("BLE: %p Cannot get characteristic - not connected\n", this);
+        return nullptr;
+    }
+    
+    NimBLERemoteService* pService = clientConnection_.pClient->getService(serviceUUID);
+    if (pService == nullptr) {
+        lNetLog("BLE: %p Service not found: %s\n", this, serviceUUID.toString().c_str());
+        return nullptr;
+    }
+    
+    NimBLERemoteCharacteristic* pChar = pService->getCharacteristic(charUUID);
+    if (pChar == nullptr) {
+        lNetLog("BLE: %p Characteristic not found: %s\n", this, charUUID.toString().c_str());
+        return nullptr;
+    }
+    
+    return pChar;
+}
+
+/**
+ * @brief Start a BLE scan for nearby devices
+ * 
+ * Initiates a non-blocking BLE scan. The scan runs in background and
+ * IsScanComplete() will return true when finished. Results can be
+ * retrieved with GetScanResults().
+ * 
+ * @param duration Scan duration in seconds (default 8)
+ * @param activeScan Use active scanning for faster discovery (default true)
+ * @return true if scan started successfully, false otherwise
+ */
+bool LoTBLE::StartScan(uint8_t duration, bool activeScan) {
+    if (!IsEnabled()) {
+        lNetLog("BLE: %p Cannot start scan - BLE disabled\n", this);
+        return false;
+    }
+    
+    if (xSemaphoreTake(scanLock_, portMAX_DELAY) != pdTRUE) {
+        return false;
+    }
+    
+    // Get the NimBLE scan instance
+    pBLEScan_ = NimBLEDevice::getScan();
+    if (pBLEScan_ == nullptr) {
+        lNetLog("BLE: %p Failed to get scan instance\n", this);
+        xSemaphoreGive(scanLock_);
+        return false;
+    }
+    
+    // Configure scan to coexist with advertising
+    pBLEScan_->setActiveScan(activeScan);
+    pBLEScan_->setInterval(100);     // Scan interval in ms
+    pBLEScan_->setWindow(99);        // Scan window in ms (must be <= interval)
+    
+    scanComplete_ = false;
+    
+    lNetLog("BLE: %p Starting scan for %d seconds\n", this, duration);
+    scanResults_ = pBLEScan_->start(duration);      // Non-blocking scan
+    //scanResults_ = pBLEScan_->getResults();
+    scanComplete_ = true;
+    
+    xSemaphoreGive(scanLock_);
+    return true;
+}
+
+/**
+ * @brief Stop any ongoing BLE scan
+ * 
+ * Stops the current scan if one is in progress. Safe to call
+ * even if no scan is running.
+ */
+void LoTBLE::StopScan() {
+    if (xSemaphoreTake(scanLock_, portMAX_DELAY) != pdTRUE) {
+        return;
+    }
+    
+    if (pBLEScan_ != nullptr && pBLEScan_->isScanning()) {
+        pBLEScan_->stop();
+        lNetLog("BLE: %p Scan stopped\n", this);
+    }
+    pBLEScan_ = nullptr;
+    
+    xSemaphoreGive(scanLock_);
+}
+
+/**
+ * @brief Check if a scan has completed
+ * @return true if scan completed, false if still scanning or not started
+ */
+bool LoTBLE::IsScanComplete() {
+    return scanComplete_;
+}
+
+/**
+ * @brief Get the results from the last completed scan
+ * @return Reference to the scan results
+ */
+NimBLEScanResults& LoTBLE::GetScanResults() {
+    return scanResults_;
+}
+
+/**
+ * @brief Clear scan complete flag (call after processing results)
+ */
+void LoTBLE::ClearScanComplete() {
+    scanComplete_ = false;
+}
 
 
 /**
