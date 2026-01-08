@@ -94,55 +94,55 @@ bool systemSleep = false;
 esp_event_loop_handle_t systemEventloopHandler;
 ESP_EVENT_DEFINE_BASE(SYSTEM_EVENTS);
 
-int hallData = 0;         // hall sensor data
-bool vbusPresent = false; // USB connected?
-int batteryPercent;       // -1 if no batt
-uint8_t bmaRotation;      // bma ground?
-float axpTemp;
-float bmaTemp;
-float cpuTemp;
-const char *currentActivity = "None";
-uint32_t stepCount = 0;
-uint32_t lastBootStepCount = 0;
+int            hallData                       = 0;         // hall sensor data
+bool           vbusPresent                    = false;     // USB connected?
+int            batteryPercent;                           // -1 if no batt
+uint8_t        bmaRotation;                              // bma ground?
+float          axpTemp;
+float          bmaTemp;
+float          cpuTemp;
+const char    *currentActivity                 = "None";
+uint32_t       stepCount                       = 0;
+uint32_t       lastBootStepCount               = 0;
 
-int16_t accXMax = -5000;
-int16_t accXMin = 5000;
-int16_t accYMax = -5000;
-int16_t accYMin = 5000;
-int16_t accZMax = -5000;
-int16_t accZMin = 5000;
+int16_t        accXMax                         = -5000;
+int16_t        accXMin                         = 5000;
+int16_t        accYMax                         = -5000;
+int16_t        accYMin                         = 5000;
+int16_t        accZMax                         = -5000;
+int16_t        accZMin                         = 5000;
 
-int16_t pcX = 0; // percent
-int16_t pcY = 0;
-int16_t pcZ = 0;
-int16_t lpcX = 0; // last percent
-int16_t lpcY = 0;
-int16_t lpcZ = 0;
-float degX = 0.0; // degrees
-float degY = 0.0;
-float degZ = 0.0;
-int16_t accX = 0; // accelerator value
-int16_t accY = 0;
-int16_t accZ = 0;
+int16_t        pcX                             = 0; // percent
+int16_t        pcY                             = 0;
+int16_t        pcZ                             = 0;
+int16_t        lpcX                            = 0; // last percent
+int16_t        lpcY                            = 0;
+int16_t        lpcZ                            = 0;
+float          degX                            = 0.0; // degrees
+float          degY                            = 0.0;
+float          degZ                            = 0.0;
+int16_t        accX                            = 0; // accelerator value
+int16_t        accY                            = 0;
+int16_t        accZ                            = 0;
 
-unsigned long beginBMAActivity = 0;
-uint32_t beginStepsBMAActivity = 0;
-uint32_t stepsBMAActivityStationary = 0;
-unsigned long timeBMAActivityStationary = 0;
-uint32_t stepsBMAActivityWalking = 0;
-unsigned long timeBMAActivityWalking = 0;
-uint32_t stepsBMAActivityRunning = 0;
-unsigned long timeBMAActivityRunning = 0;
-uint32_t stepsBMAActivityInvalid = 0;
-unsigned long timeBMAActivityInvalid = 0;
-uint32_t stepsBMAActivityNone = 0;
-unsigned long timeBMAActivityNone = 0;
+unsigned long  beginBMAActivity                = 0;
+uint32_t       beginStepsBMAActivity           = 0;
+uint32_t       stepsBMAActivityStationary      = 0;
+unsigned long  timeBMAActivityStationary       = 0;
+uint32_t       stepsBMAActivityWalking         = 0;
+unsigned long  timeBMAActivityWalking          = 0;
+uint32_t       stepsBMAActivityRunning         = 0;
+unsigned long  timeBMAActivityRunning          = 0;
+uint32_t       stepsBMAActivityInvalid         = 0;
+unsigned long  timeBMAActivityInvalid          = 0;
+uint32_t       stepsBMAActivityNone            = 0;
+unsigned long  timeBMAActivityNone             = 0;
 
-TaskHandle_t AXPInterruptControllerHandle = NULL;
+TaskHandle_t   AXPInterruptControllerHandle    = NULL;
 //SemaphoreHandle_t AXPInterruptSemaphore = xSemaphoreCreateMutex();
-TaskHandle_t BMAInterruptControllerHandle = NULL;
+TaskHandle_t   BMAInterruptControllerHandle    = NULL;
 //SemaphoreHandle_t BMAInterruptSemaphore = xSemaphoreCreateMutex();
-TaskHandle_t RTCInterruptControllerHandle = NULL;
+TaskHandle_t   RTCInterruptControllerHandle    = NULL;
 //SemaphoreHandle_t RTCInterruptSemaphore = xSemaphoreCreateMutex();
 
 #define LONG_TIME 0xffff
@@ -166,6 +166,13 @@ extern "C" // Extern C is used when we are using a funtion written in "C" langua
 }
 uint8_t temprature_sens_read(); // on esp_idf 4.4 is faked to 55.33333 C :(
 
+/**
+ * @brief Heartbeat callback executed by the `LunokIoTSystemTicker` Ticker.
+ *
+ * This function runs in ticker context and posts a `SYSTEM_EVENT_TICK` to
+ * the system event loop when the device is awake and the display is on.
+ * It returns immediately if the system is sleeping or the backlight is off.
+ */
 void LunokIoTSystemTickerCallback() { // freeRTOS discourages process on callback due priority and recomends a queue :)
     if ( systemSleep ) { return; } // only when isn't sleeping
     if (false == ttgo->bl->isOn()) { return; } // only when screen is on
@@ -173,26 +180,47 @@ void LunokIoTSystemTickerCallback() { // freeRTOS discourages process on callbac
 }
 
 
+/**
+ * @brief Stop the periodic system ticker if it is active.
+ *
+ * Detaches the `LunokIoTSystemTicker` Ticker so the heartbeat callback
+ * stops being invoked.
+ */
 void LunokIoTSystemTickerStop() {
     if ( false == LunokIoTSystemTicker.active() ) { return; }
     LunokIoTSystemTicker.detach();
 }
 
+/**
+ * @brief Start the periodic system ticker.
+ *
+ * Attaches the `LunokIoTSystemTickerCallback` to `LunokIoTSystemTicker`
+ * so periodic sensor/event polling and heartbeat handling begins.
+ */
 void LunokIoTSystemTickerStart() {
     if ( LunokIoTSystemTicker.active() ) { return; }
     // Start the tick loop
     LunokIoTSystemTicker.attach_ms(LUNOKIOT_SYSTEM_HEARTBEAT_TIME,LunokIoTSystemTickerCallback);
 }
 
+/**
+ * @brief Inspect the ESP32 wakeup reason and determine if the device should
+ *        continue sleeping.
+ *
+ * Returns true when the device should remain sleeping (no external event to
+ * handle), or false if the wakeup requires processing (timer, external IRQ,
+ * etc.). Side-effects: posts timer events and resumes certain interrupt
+ * controller tasks when appropriate.
+ */
 bool WakeUpReason() { // this function decides the system must wake or sleep
 
-// if call return, the system remains active but with the screen off (must call DoSleep in other place)
-//
-// at this time only 3 interrupts returns:
-//
-// esp timer int
-// AXP202 int
-// BMA432 int
+    // if call return, the system remains active but with the screen off (must call DoSleep in other place)
+    //
+    // at this time only 3 interrupts returns:
+    //
+    // esp timer int
+    // AXP202 int
+    // BMA432 int
 
     esp_sleep_wakeup_cause_t wakeup_reason;
     uint64_t GPIO_reason = 0;
@@ -267,6 +295,14 @@ bool WakeUpReason() { // this function decides the system must wake or sleep
 uint16_t doSleepThreads = 0;
 SemaphoreHandle_t DoSleepTaskSemaphore = xSemaphoreCreateMutex();
 
+/**
+ * @brief Task that prepares the device for light-sleep and enters it.
+ *
+ * This FreeRTOS task serializes preparation for light sleep: it stops the
+ * system ticker, closes or pauses UI apps, disables radios, commits the
+ * database, configures wakeup sources, and calls `esp_light_sleep_start()`.
+ * After wake it resumes normal operation and restarts the ticker.
+ */
 static void DoSleepTask(void *args) {
     // https://docs.espressif.com/projects/esp-idf/en/v4.2.2/esp32/api-reference/system/esp_timer.html
     // what about change all timers to:
@@ -414,6 +450,13 @@ static void DoSleepTask(void *args) {
     vTaskDelete(NULL);
 }
 
+/**
+ * @brief Request the system to enter light-sleep via a background task.
+ *
+ * Spawns `DoSleepTask` pinned to the system core. If task creation fails,
+ * this function logs an error and schedules a retry when the screen is
+ * off.
+ */
 void DoSleep() {
     DeepSleepPoseTimer.detach();
 
@@ -463,6 +506,13 @@ RTC_Date *BMAActivitesTimes=nullptr;
 size_t BMAActivitesOffset=0;
 */
 
+/**
+ * @brief Event handler for BMA423 activity changes.
+ *
+ * Updates activity counters and durations when the BMA reports a change in
+ * activity (stationary / walking / running / invalid / none). Commits the
+ * database and may trigger `DoSleep()` when the screen is off.
+ */
 static void BMAEventActivity(void *handler_args, esp_event_base_t base, int32_t id, void *event_data) {
     /*
     if ( nullptr == BMAActivitesBuffer ) {
@@ -534,6 +584,12 @@ static void BMAEventActivity(void *handler_args, esp_event_base_t base, int32_t 
     }
 }
 
+/**
+ * @brief Handler for periodic timer events (SYSTEM_EVENT_TIMER).
+ *
+ * Performs sensor sampling and schedules a delayed call to `DoSleep()` if the
+ * device remains with the screen off.
+ */
 static void SystemEventTimer(void *handler_args, esp_event_base_t base, int32_t id, void *event_data) {
     lEvLog("ESP Wakeup timer triggered\n");
     if (false == ttgo->bl->isOn()) { LoT().CpuSpeed(80); }
@@ -543,12 +599,12 @@ static void SystemEventTimer(void *handler_args, esp_event_base_t base, int32_t 
     // if bluetooth is enabled, do a chance to get notifications
     if ( LoT().GetBLE()->IsEnabled() ) {
         lEvLog("BLE: Wait a little bit for connection/notification...\n");
-        timeToWait+=LoT().GetBLE()->GraceTime();
+        timeToWait += LoT().GetBLE()->GraceTime();
     }
     // if wifi task is running, add some time to reach the results
     if ( LoT().GetWiFi()->InUse() ) {
         lEvLog("WiFi: Wait a little bit for connection...\n");
-        timeToWait+=LoT().GetWiFi()->GraceTime();
+        timeToWait += LoT().GetWiFi()->GraceTime();
     }
     lEvLog("Waiting %g seconds to try sleep\n",timeToWait);
     /*
@@ -564,6 +620,12 @@ static void SystemEventTimer(void *handler_args, esp_event_base_t base, int32_t 
     });
 }
 
+/**
+ * @brief Handle PMU power events (charging / no charging).
+ *
+ * Adjusts screen brightness when USB power is connected or restores the
+ * user's brightness when disconnected.
+ */
 static void SystemEventPMUPower(void *handler_args, esp_event_base_t base, int32_t id, void *event_data) {
     if ( false == ttgo->bl->isOn()) { return; } // no screen?
 
@@ -589,6 +651,12 @@ static void AnyEventSystem(void *handler_args, esp_event_base_t base, int32_t id
     lEvLog("@TODO Unhandheld SystemEvent: args: %p base: '%s' id: %d data: %p\n",handler_args,base,id,event_data);
 }
 */
+/**
+ * @brief Handle orientation (direction) events from the BMA423 accelerometer.
+ *
+ * Uses a short timeout to detect a 'deep sleep' pose and, if confirmed,
+ * powers down the device into deep sleep with appropriate wakeup configuration.
+ */
 static void BMAEventDirection(void *handler_args, esp_event_base_t base, int32_t id, void *event_data) {
     //lSysLog("NEW ROTATION: %u\n",bmaRotation);
     DeepSleepPoseTimer.detach();
@@ -636,6 +704,12 @@ static void BMAEventDirection(void *handler_args, esp_event_base_t base, int32_t
     }
 }
 
+/**
+ * @brief Handle double-tap events from the BMA423 sensor.
+ *
+ * If the screen is off, this event wakes the system and may launch the
+ * watchface or an always-on face depending on user settings.
+ */
 static void BMAEventDoubleTap(void *handler_args, esp_event_base_t base, int32_t id, void *event_data) {
     lEvLog("BMA423: Event: Double tap\n");
     if (false == ttgo->bl->isOn()) {
@@ -653,17 +727,35 @@ static void BMAEventDoubleTap(void *handler_args, esp_event_base_t base, int32_t
     }
 }
 
+/**
+ * @brief Handle tilt events from the BMA423 sensor.
+ *
+ * If the screen is off, a tilt event triggers `DoSleep()` to ensure proper
+ * low-power behavior (this may be used as a quick power-down gesture).
+ */
 static void BMAEventTilt(void *handler_args, esp_event_base_t base, int32_t id, void *event_data) {
     lEvLog("BMA423: Event: Tilt\n");
     if (false == ttgo->bl->isOn()) { DoSleep(); }
 }
 
 
+/**
+ * @brief Handle 'no activity' events from the BMA423 sensor.
+ *
+ * Called when the sensor detects the device is stationary for a period. If
+ * the display is off the system will attempt to enter sleep to save power.
+ */
 static void BMAEventNoActivity(void *handler_args, esp_event_base_t base, int32_t id, void *event_data) {
     lEvLog("BMA423: Event: No actity\n");
     if (false == ttgo->bl->isOn()) { DoSleep(); }
 }
 
+/**
+ * @brief Handle step counter events coming from the BMA423.
+ *
+ * Updates the global `stepCount` value from the sensor and may call
+ * `DoSleep()` if the display is off.
+ */
 static void BMAEventStepCounter(void *handler_args, esp_event_base_t base, int32_t id, void *event_data) {
     // Get step data from register
     uint32_t nowSteps = ttgo->bma->getCounter();
@@ -677,6 +769,13 @@ static void BMAEventStepCounter(void *handler_args, esp_event_base_t base, int32
 extern bool provisioned;
 extern void StopDatabase();
 
+/**
+ * @brief Persist relevant runtime state before shutting down or deep-sleep.
+ *
+ * Stores accelerometer min/max values, activity counters and timestamps into
+ * NVS, commits the database, stops subsystems (WiFi/BLE/LittleFS) and
+ * ensures a clean shutdown of storage.
+ */
 void SaveDataBeforeShutdown() {
     //NVS.setInt("provisioned", provisioned, false);
 
@@ -739,6 +838,11 @@ void SaveDataBeforeShutdown() {
     }*/
 }
 
+/**
+ * @brief Handle long press of the PMU PEK button.
+ *
+ * Posts a `SYSTEM_EVENT_STOP` so the system can prepare for sleep/shutdown.
+ */
 static void AXPEventPEKLong(void *handler_args, esp_event_base_t base, int32_t id, void *event_data) {
     esp_event_post_to(systemEventloopHandler, SYSTEM_EVENTS, SYSTEM_EVENT_STOP, nullptr, 0, LUNOKIOT_EVENT_MANDATORY_TIME_TICKS);
 }
@@ -746,6 +850,12 @@ void _SendEventWakeTask(void *data) {
     esp_event_post_to(systemEventloopHandler, SYSTEM_EVENTS, SYSTEM_EVENT_WAKE, nullptr, 0, LUNOKIOT_EVENT_MANDATORY_TIME_TICKS);
     vTaskDelete(NULL);
 }
+/**
+ * @brief Handle short press of the PMU PEK button.
+ *
+ * Toggles screen on/off and either launches the watchface or requests sleep
+ * depending on the current display state.
+ */
 static void AXPEventPEKShort(void *handler_args, esp_event_base_t base, int32_t id, void *event_data) {
     const char AlwaysOnAppName[] = "Always on";
     bool screenOn = ttgo->bl->isOn();
@@ -774,6 +884,13 @@ static void AXPEventPEKShort(void *handler_args, esp_event_base_t base, int32_t 
     }
 }
 
+/**
+ * @brief Read accelerometer (BMA423) data and update global sensor state.
+ *
+ * Obtains acceleration and temperature samples under the `I2cMutex`, updates
+ * min/max/percentage/degree values and posts events when rotation or
+ * temperature changes are detected.
+ */
 void TakeBMPSample() {
     
     BaseType_t done = xSemaphoreTake(I2cMutex, LUNOKIOT_EVENT_IMPORTANT_TIME_TICKS);
@@ -864,6 +981,12 @@ void TakeBMPSample() {
 
 unsigned long nextSlowSensorsTick = 0;
 unsigned long nextSensorsTick = 0;
+/**
+ * @brief Main tick event handler scheduled by the system ticker.
+ *
+ * Polls sensors at two rates: a slower set of sensors and faster BMA
+ * sampling. This keeps periodic telemetry up to date.
+ */
 static void SystemEventTick(void *handler_args, esp_event_base_t base, int32_t id, void *event_data) {
     if (millis() > nextSlowSensorsTick) { // poll some sensors ( slow pooling )
         TakeAllSamples();
@@ -874,6 +997,9 @@ static void SystemEventTick(void *handler_args, esp_event_base_t base, int32_t i
     }
 }
 
+/**
+ * @brief Handle system stop event: show shutdown app if screen is on.
+ */
 static void SystemEventStop(void *handler_args, esp_event_base_t base, int32_t id, void *event_data) {
     SqlLog("stop");
     lSysLog("System event: Stop\n");
@@ -881,6 +1007,13 @@ static void SystemEventStop(void *handler_args, esp_event_base_t base, int32_t i
 }
 
 unsigned long lastLowMemTimestamp_ms=0; // time limit for the next LowMemory()
+/**
+ * @brief Low memory event handler.
+ *
+ * Logs heap status, notifies the active application via `LowMemory()` and may
+ * revert to the watchface if the current application cannot continue due to
+ * memory constraints.
+ */
 static void SystemEventLowMem(void *handler_args, esp_event_base_t base, int32_t id, void *event_data) {
     // dont trigger too fast
     if ( lastLowMemTimestamp_ms > millis() ) { return; }
@@ -912,6 +1045,12 @@ static void SystemEventLowMem(void *handler_args, esp_event_base_t base, int32_t
 
 }
 
+/**
+ * @brief Handle system wake events.
+ *
+ * Checks device orientation to optionally launch the Lamp application or to
+ * restore/launch the watchface when waking from sleep.
+ */
 static void SystemEventWake(void *handler_args, esp_event_base_t base, int32_t id, void *event_data) {
     lSysLog("System event: Wake\n");
     SqlLog("wake");
@@ -942,6 +1081,12 @@ static void SystemEventWake(void *handler_args, esp_event_base_t base, int32_t i
     // In case of already running a watchface, do nothing
 }
 // called when system is up
+/**
+ * @brief Called once when the system has finished booting and is ready.
+ *
+ * Performs housekeeping such as freeing space and launching the default
+ * watchface if no application is active.
+ */
 static void SystemEventReady(void *handler_args, esp_event_base_t base, int32_t id, void *event_data) {
     lSysLog("System event: Up and running!\n");
     FreeSpace();
@@ -956,6 +1101,13 @@ static void SystemEventReady(void *handler_args, esp_event_base_t base, int32_t 
     if ( nullptr == currentApplication ) { LaunchWatchface(false); }
 }
 
+/**
+ * @brief Handler for generic FreeRTOS/ESP event loop events.
+ *
+ * Interprets a number of WiFi provisioning, WiFi and IP events and logs
+ * or forwards them as needed. Unrecognized events are logged for TODO
+ * handling.
+ */
 static void FreeRTOSEventReceived(void *handler_args, esp_event_base_t base, int32_t id, void *event_data) {
     // https://docs.espressif.com/projects/esp-idf/en/v4.2.2/esp32/api-guides/event-handling.html#event-ids-and-corresponding-data-structures
     bool identified = false;
@@ -1134,12 +1286,28 @@ static void FreeRTOSEventReceived(void *handler_args, esp_event_base_t base, int
     }
 }
 
+/**
+ * @brief ISR callback to resume the RTC interrupt controller task.
+ */
 void IRAM_ATTR RTCIntCallback() { xTaskResumeFromISR(RTCInterruptControllerHandle); }
 
+/**
+ * @brief ISR callback to resume the BMA interrupt controller task.
+ */
 void IRAM_ATTR BMAIntCallback() { xTaskResumeFromISR(BMAInterruptControllerHandle); }
 
+/**
+ * @brief ISR callback to resume the AXP interrupt controller task.
+ */
 void IRAM_ATTR AXPIntCallback() { xTaskResumeFromISR(AXPInterruptControllerHandle); }
 
+/**
+ * @brief Background task that services AXP202 PMU interrupts.
+ *
+ * This task waits for PMU IRQ notifications, reads and clears the AXP IRQ
+ * status, and posts corresponding system events (charging, power connect,
+ * PEK presses, temperature alerts, etc.).
+ */
 static void AXPInterruptController(void *args) {
     // https://docs.espressif.com/projects/esp-idf/en/release-v4.4/esp32/api-reference/system/freertos.html?highlight=queue#queue-api
 
@@ -1342,6 +1510,13 @@ static void AXPInterruptController(void *args) {
     vTaskDelete(NULL);
 }
 
+/**
+ * @brief Background task that services BMA423 IMU interrupts.
+ *
+ * Initializes the sensor, restores prior session state from NVS, configures
+ * features and then waits to process interrupts coming from the BMA423. It
+ * posts events for steps, activity, tilt, double-tap, and no-motion.
+ */
 static void BMAInterruptController(void *args) {
     // https://docs.espressif.com/projects/esp-idf/en/release-v4.4/esp32/api-reference/system/freertos.html?highlight=queue#queue-api
     lSysLog("BMA interrupt handler\n"); // BMA423
@@ -1599,6 +1774,12 @@ static void BMAInterruptController(void *args) {
 
 
 
+/**
+ * @brief Background task that services RTC (PCF8563) interrupts.
+ *
+ * Attaches the RTC ISR, handles alarms and timers, and posts relevant
+ * log messages. The task loops suspended until an interrupt resumes it.
+ */
 static void RTCInterruptController(void *args) {
     // https://docs.espressif.com/projects/esp-idf/en/release-v4.4/esp32/api-reference/system/freertos.html?highlight=queue#queue-api
     lSysLog("RTC interrupt handler \n");
@@ -1703,6 +1884,16 @@ void external_stack_function(void)
  * @param caps capabillites requested of failed allocation
  * @param function_name function which generated the failure
  */
+/**
+ * @brief Callback invoked when a heap allocation fails.
+ *
+ * Logs the failed allocation and posts a `SYSTEM_EVENT_LOWMEMORY` event so the
+ * system can react (e.g. free resources or show an error screen).
+ *
+ * @param size Number of bytes requested.
+ * @param caps Heap capability flags requested.
+ * @param function_name Name of the function requesting memory.
+ */
 void SystemAllocFailed(size_t size, uint32_t caps, const char * function_name) {
     //lLog("\n");
     //lLog(" ====== /!\\/!\\/!\\ ======\n");
@@ -1740,11 +1931,22 @@ void SystemAllocFailed(size_t size, uint32_t caps, const char * function_name) {
     }
 }
 
+/**
+ * @brief Registered shutdown handler called by the ESP-IDF on system
+ *        shutdown.
+ */
 void SystemShutdownHandler() {
     lLog("======>> lunokIoT: See you soon! :) <<======\n");
     uart_wait_tx_idle_polling(UART_NUM_0);
 }
 
+/**
+ * @brief Initialize system event handling and interrupt controller tasks.
+ *
+ * Registers allocator/shutdown callbacks, creates the application-specific
+ * event loop, registers handlers for system events, and starts interrupt
+ * controller tasks for PMU, IMU and RTC.
+ */
 void SystemEventsStart() {
     systemStatsBootCounter++; // increment boot count
     esp_err_t allocatorRegistered = heap_caps_register_failed_alloc_callback(&SystemAllocFailed);
@@ -1886,10 +2088,19 @@ void SystemEventsStart() {
 /*
  * Notification of boot end (only one time per boot)
  */
+/**
+ * @brief Notify the system event loop that boot has finished.
+ */
 void SystemEventBootEnd() {
     esp_event_post_to(systemEventloopHandler, SYSTEM_EVENTS, SYSTEM_EVENT_READY, nullptr, 0, LUNOKIOT_EVENT_MANDATORY_TIME_TICKS);
 }
 
+/**
+ * @brief Sample PMU (AXP202) sensor values and update global state.
+ *
+ * Reads battery percentage, VBUS presence and PMU temperature under the
+ * `I2cMutex` and posts events when values change.
+ */
 void TakeAXPSample() {
     BaseType_t done = xSemaphoreTake(I2cMutex, LUNOKIOT_EVENT_IMPORTANT_TIME_TICKS);
     if (pdTRUE != done) { return; }
@@ -1922,6 +2133,12 @@ void TakeAXPSample() {
     }
 }
 
+/**
+ * @brief Sample ESP32-on-chip sensors (hall sensor and temperature).
+ *
+ * Updates `hallData` and `cpuTemp` and posts a temperature event when the
+ * CPU temperature changes.
+ */
 void TakeESPSamples() {
     hallData = hallRead();
     float nowCpuTemp = (temprature_sens_read() - 32) / 1.8;
@@ -1935,6 +2152,12 @@ void TakeESPSamples() {
  * Get all samples possible
  */
 unsigned long nextReportTimestamp = 0;
+/**
+ * @brief Collect samples from all sensors (ESP, BMA, AXP) and log telemetry.
+ *
+ * Calls `TakeESPSamples()`, `TakeBMPSample()` and `TakeAXPSample()` and
+ * periodically records a summary of telemetry into the system database.
+ */
 void TakeAllSamples() {
 
     TakeESPSamples();

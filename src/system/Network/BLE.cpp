@@ -46,7 +46,7 @@ const char * BLEZoneLocationsHumanReadable[] = {
     "Mark"
 };
 
-BLEZoneLocations BLELocationZone=BLEZoneLocations::UNKNOWN; // unknown by default
+BLEZoneLocations BLELocationZone = BLEZoneLocations::UNKNOWN; // unknown by default
 
 const esp_power_level_t defaultBLEPowerLevel = ESP_PWR_LVL_N3;
 // monitors the wake and sleep of BLE
@@ -75,134 +75,40 @@ const esp_power_level_t defaultBLEPowerLevel = ESP_PWR_LVL_N3;
 // list of know devices
 SemaphoreHandle_t BLEKnowDevicesSemaphore = xSemaphoreCreateMutex();
 std::list <lBLEDevice*>BLEKnowDevices;
-uint32_t bleLocationScanCounter=0;
+uint32_t bleLocationScanCounter = 0;
 
 // http://www.espruino.com/Gadgetbridge
-const size_t gadgetBridgeBufferSize=8*1024;
+const size_t gadgetBridgeBufferSize = 8 * 1024;
 
-// Server callbacks
-class LBLEServerCallbacks: public NimBLEServerCallbacks {
-    private:
-        LoTBLE *bleHandler=nullptr;
-    public:
-        LBLEServerCallbacks(LoTBLE *handler) : bleHandler(handler) {
-            lNetLog("BLE: %p LBLEServerCallbacks %p\n",bleHandler,this);
-        }
+class LBLEScanCallbacks : public NimBLEScanCallbacks {
+  public:
+    virtual ~LBLEScanCallbacks() {}
 
-        /**
-         * @brief Callback triggered when a BLE client connects to the server
-         * @param pServer Pointer to the NimBLE server instance
-         * @param desc Pointer to the BLE connection descriptor with connection details
-         * 
-         * Handles client connection events by:
-         * - Logging the connection
-         * - Stopping BLE advertising
-         * - Launching Bluetooth application if one is not already running
-         */
-        void onConnect(NimBLEServer* pServer, ble_gap_conn_desc* desc) {
-            lNetLog("BLE: %p LBLEServerCallbacks: Client connect\n",bleHandler,this);
-            bleHandler->StopAdvertising();
-
-            if ( nullptr != currentApplication ) {
-                lNetLog("BLE: %p LBLEServerCallbacks: nullptr != currentApplication\n",bleHandler,this);
-                if ( 0 != strcmp(currentApplication->AppName(),"BLE pairing")) {
-                    if ( ttgo->bl->isOn()) {
-                        LaunchApplication(new BluetoothApplication());
-                    }
-                }
-            }
-        }
-        /**
-         * @brief Callback triggered when a BLE client disconnects from the server
-         * @param pServer Pointer to the NimBLE server instance
-         * @param desc Pointer to the BLE connection descriptor
-         * 
-         * Handles client disconnection by:
-         * - Logging the disconnection event
-         * - Resuming BLE advertising to accept new connections
-         */
-        void onDisconnect(NimBLEServer* pServer, ble_gap_conn_desc* desc) {
-            lNetLog("BLE: %p LBLEServerCallbacks: Client disconnect \n",bleHandler,this);
-            //deviceConnected = false;
-            bleHandler->StartAdvertising();
-        }
-        /**
-         * @brief Callback triggered when the MTU (Maximum Transmission Unit) is negotiated with a client
-         * @param MTU The newly negotiated MTU size in bytes
-         * @param desc Pointer to the BLE connection descriptor
-         * 
-         * Logs the MTU change event. MTU affects the maximum payload size per BLE packet.
-         */
-        void onMTUChange(uint16_t MTU, ble_gap_conn_desc* desc) {
-            lNetLog("BLE: %p LBLEServerCallbacks: MTU changed to: %u\n",bleHandler,this,MTU);
-        }
-        /**
-         * @brief Callback triggered when the server needs to provide a passkey for pairing
-         * @return The 6-digit passkey used for secure pairing
-         * 
-         * Returns the security passkey stored in the BLE device configuration.
-         * Used during the pairing process for numeric comparison or keyboard entry.
-         */
-        uint32_t onPassKeyRequest() {
-            uint32_t pass = BLEDevice::getSecurityPasskey();
-            lNetLog("BLE: %p LBLEServerCallbacks: Password request: %04u\n",bleHandler,this,pass);
-            return BLEDevice::getSecurityPasskey();
-        }
-        /**
-         * @brief Callback triggered when BLE pairing/authentication is successfully completed
-         * @param desc Pointer to the BLE connection descriptor
-         * 
-         * After successful authentication:
-         * - Logs the completion event
-         * - Dismisses BLE pairing application if active
-         * - Returns to watchface display
-         */
-        void onAuthenticationComplete(ble_gap_conn_desc* desc) {
-            lNetLog("BLE: %p LBLEServerCallbacks: Authentication complete\n",bleHandler,this);
-            if ( nullptr != currentApplication ) {
-                if ( 0 == strcmp(currentApplication->AppName(),"BLE pairing")) {
-                    if ( ttgo->bl->isOn()) {
-                        LaunchWatchface();
-                    }
-                }
-            }
-        }
-        /**
-         * @brief Callback to verify PIN confirmation during secure BLE pairing
-         * @param pin The PIN provided by the remote device to confirm
-         * @return true if PIN matches the expected passkey, false otherwise
-         * 
-         * Validates that the PIN from the remote device matches the local passkey.
-         * Used for numeric comparison confirmation during pairing.
-         */
-        bool onConfirmPIN(uint32_t pin) {
-            uint32_t pass = BLEDevice::getSecurityPasskey();
-            lNetLog("BLE: %p LBLEServerCallbacks: PIN confirmation: %04u ",bleHandler,this,pass);
-            if ( pin == BLEDevice::getSecurityPasskey() ) {
-                lLog("OK\n");
-                return true;
-            }
-            lLog("FAIL\n");
-            return false;
-        }
-};
-
-// advertiser callbacks
-class LBLEAdvertisedDeviceCallbacks: public BLEAdvertisedDeviceCallbacks {
     /**
-     * @brief Callback triggered when a BLE advertisement is discovered during scanning
-     * @param advertisedDevice Pointer to the discovered BLE device
-     * 
-     * Processes discovered BLE devices:
-     * - Checks if device is already known
-     * - Updates device metrics (RSSI, TX power, distance)
-     * - Adds new devices to the known device list
-     * - Updates location zone information
-     * - Stores device data in the database
+     * @brief Called when a new device is discovered, before the scan result is received (if applicable).
+     * @param [in] advertisedDevice The device which was discovered.
      */
-    void onResult(BLEAdvertisedDevice* advertisedDevice) {
+    void onDiscovered(const NimBLEAdvertisedDevice* advertisedDevice) override {
+        lNetLog("BLE: Device discovered: '%s'(%s), RSSI: %d dBm\n",
+                                 advertisedDevice->getName().c_str(),
+                                 advertisedDevice->getAddress().toString().c_str(),
+                                 advertisedDevice->getRSSI());
+    }
+
+    /**
+     * @brief Called when a new scan result is complete, including scan response data (if applicable).
+     * @param [in] advertisedDevice The device for which the complete result is available.
+     */
+    void onResult(const NimBLEAdvertisedDevice* advertisedDevice) override {
         bool alreadyKnown = false;
-        int FinalZone=-1;
+        int FinalZone = -1;
+
+        lNetLog("BLE: Device found: '%s'(%s), RSSI: %d dBm, TX Power: %d dBm\n",
+                                advertisedDevice->getName().c_str(),
+                                advertisedDevice->getAddress().toString().c_str(),
+                                advertisedDevice->getRSSI(),
+                                advertisedDevice->getTXPower());
+
         if( xSemaphoreTake( BLEKnowDevicesSemaphore, LUNOKIOT_EVENT_FAST_TIME_TICKS) == pdTRUE )  {
             for (auto const& dev : BLEKnowDevices) {
                 if ( dev->addr == advertisedDevice->getAddress() ) {
@@ -213,21 +119,18 @@ class LBLEAdvertisedDeviceCallbacks: public BLEAdvertisedDeviceCallbacks {
                                             ((millis()-dev->firstSeen)/1000),
                                             ((millis()-dev->lastSeen)/1000),
                                             dev->seenCount,dev->locationGroup);
-                    dev->lastSeen = millis();
-                    dev->seenCount++;
+                    dev->lastSeen   = millis();
+                    dev->seenCount  ++;
+                    dev->rssi       = advertisedDevice->getRSSI();
+                    dev->txPower    = advertisedDevice->getTXPower();
+                    dev->distance   = 10 ^ ((dev->txPower - dev->rssi) / (10 * 2));
                     
-                    if ( advertisedDevice->haveRSSI() ) {
-                        dev->rssi = advertisedDevice->getRSSI();
-                    }
-                    if ( advertisedDevice->haveTXPower() ) {
-                        dev->txPower = advertisedDevice->getTXPower();
-                    }
                     // https://stackoverflow.com/questions/20416218/understanding-ibeacon-distancing/20434019#20434019
-                    if (( advertisedDevice->haveRSSI()) && (advertisedDevice->haveTXPower())) {
-                        // Distance = 10 ^ ((Measured Power -RSSI)/(10 * N))
-                        dev->distance = 10 ^((dev->txPower-dev->rssi)/(10* 2));
-                        //lNetLog("BLE: DEBUG Device DISTANCE: %f\n",dev->distance);
-                    }
+                    // if (( advertisedDevice->getRSSI()) && (advertisedDevice->haveTXPower())) {
+                    //     // Distance = 10 ^ ((Measured Power -RSSI)/(10 * N))
+                    //     dev->distance = 10 ^((dev->txPower-dev->rssi)/(10* 2));
+                    //     //lNetLog("BLE: DEBUG Device DISTANCE: %f\n",dev->distance);
+                    // }
                     
                     if ( BLEZoneLocations::UNKNOWN != dev->locationGroup ) {
                         FinalZone = dev->locationGroup;
@@ -258,18 +161,12 @@ class LBLEAdvertisedDeviceCallbacks: public BLEAdvertisedDeviceCallbacks {
         
         snprintf(newDev->devName, nameLen + 1, "%s", advertisedDevice->getName().c_str());
         lNetLog("BLE: New dev: '%s'(%s)\n",newDev->devName, newDev->addr.toString().c_str());
-        if ( advertisedDevice->haveRSSI() ) {
-            newDev->rssi = advertisedDevice->getRSSI();
-        }
-        if ( advertisedDevice->haveTXPower() ) {
-            newDev->txPower = advertisedDevice->getTXPower();
-        }
+        
+        newDev->rssi = advertisedDevice->getRSSI();
+        newDev->txPower = advertisedDevice->getTXPower();
         // https://stackoverflow.com/questions/20416218/understanding-ibeacon-distancing/20434019#20434019
-        if (( advertisedDevice->haveRSSI()) && (advertisedDevice->haveTXPower())) {
-            // Distance = 10 ^ ((Measured Power -RSSI)/(10 * N))
-            newDev->distance = 10 ^((newDev->txPower-newDev->rssi)/(10* 2));
-            //lNetLog("BLE: DEBUG Device DISTANCE: %f\n",newDev->distance);
-        }
+        newDev->distance = 10 ^((newDev->txPower - newDev->rssi)/(10* 2));
+        
         newDev->locationGroup=BLEZoneLocations::UNKNOWN;
         newDev->firstSeen = millis();
         newDev->lastSeen = newDev->firstSeen;
@@ -279,6 +176,270 @@ class LBLEAdvertisedDeviceCallbacks: public BLEAdvertisedDeviceCallbacks {
             xSemaphoreGive( BLEKnowDevicesSemaphore );
         }
         //lNetLog("BLE: seen devices: %d\n",BLEKnowDevices.size());
+    }
+
+    /**
+     * @brief Called when a scan operation ends.
+     * @param [in] scanResults The results of the scan that ended.
+     * @param [in] reason The reason code for why the scan ended.
+     */
+    void onScanEnd(const NimBLEScanResults& scanResults, int reason) override {
+        lNetLog("BLE: Scan Ended. Devices found: %d, reason: %d\n", scanResults.getCount(), reason);
+    }
+};
+
+// Server callbacks
+class LBLEServerCallbacks: public NimBLEServerCallbacks {
+    private:
+        LoTBLE *bleHandler=nullptr;
+    public:
+        LBLEServerCallbacks(LoTBLE *handler) : bleHandler(handler) {
+            lNetLog("BLE: %p LBLEServerCallbacks %p\n",bleHandler,this);
+        }
+
+        /**
+         * @brief Callback triggered when a BLE client connects to the server
+         * @param pServer Pointer to the NimBLE server instance
+         * @param desc Pointer to the BLE connection descriptor with connection details
+         * 
+         * Handles client connection events by:
+         * - Logging the connection
+         * - Stopping BLE advertising
+         * - Launching Bluetooth application if one is not already running
+         */
+        void onConnect(NimBLEServer* pServer, NimBLEConnInfo& connInfo) {
+            lNetLog("BLE: %p LBLEServerCallbacks: Client connect\n",bleHandler,this);
+            
+            bleHandler->StopAdvertising();
+
+            if ( nullptr != currentApplication ) {
+                lNetLog("BLE: %p LBLEServerCallbacks: nullptr != currentApplication\n",bleHandler,this);
+                if ( 0 != strcmp(currentApplication->AppName(),"BLE pairing")) {
+                    if ( ttgo->bl->isOn()) {
+                        LaunchApplication(new BluetoothApplication());
+                    }
+                }
+            }
+        }
+        /**
+         * @brief Callback triggered when a BLE client disconnects from the server
+         * @param pServer Pointer to the NimBLE server instance
+         * @param desc Pointer to the BLE connection descriptor
+         * 
+         * Handles client disconnection by:
+         * - Logging the disconnection event
+         * - Resuming BLE advertising to accept new connections
+         */
+        void onDisconnect(NimBLEServer* pServer, NimBLEConnInfo& connInfo, int reason) {
+            lNetLog("BLE: %p LBLEServerCallbacks: Client disconnect (reason:%d)\n",bleHandler,this,reason);
+            // print connection info on disconnect
+            lNetLog("BLE: ConnInfo addr:%s handle:%u mtu:%u\n",
+                    connInfo.getAddress().toString().c_str(),
+                    (unsigned)connInfo.getConnHandle(),
+                    (unsigned)connInfo.getMTU());
+            //deviceConnected = false;
+            bleHandler->StartAdvertising();
+        }
+        /**
+         * @brief Callback triggered when the MTU (Maximum Transmission Unit) is negotiated with a client
+         * @param MTU The newly negotiated MTU size in bytes
+         * @param desc Pointer to the BLE connection descriptor
+         * 
+         * Logs the MTU change event. MTU affects the maximum payload size per BLE packet.
+         */
+        void onMTUChange(uint16_t MTU, NimBLEConnInfo& connInfo) {
+            lNetLog("BLE: %p LBLEServerCallbacks: MTU changed to: %u\n",bleHandler,this,MTU);
+        }
+        /**
+         * @brief Callback triggered when the server needs to provide a passkey for pairing
+         * @return The 6-digit passkey used for secure pairing
+         * 
+         * Returns the security passkey stored in the BLE device configuration.
+         * Used during the pairing process for numeric comparison or keyboard entry.
+         */
+        uint32_t onPassKeyRequest() {
+            uint32_t pass = BLEDevice::getSecurityPasskey();
+            lNetLog("BLE: %p LBLEServerCallbacks: Password request: %04u\n", bleHandler, this, pass);
+            return pass;
+        }
+        /**
+         * @brief Callback triggered when BLE pairing/authentication is successfully completed
+         * @param desc Pointer to the BLE connection descriptor
+         * 
+         * After successful authentication:
+         * - Logs the completion event
+         * - Dismisses BLE pairing application if active
+         * - Returns to watchface display
+         */
+        void onAuthenticationComplete(NimBLEConnInfo& connInfo) {
+            lNetLog("BLE: %p LBLEServerCallbacks: Authentication complete\n",bleHandler,this);
+            if ( nullptr != currentApplication ) {
+                lNetLog("BLE: currentApplication->AppName(): '%s'\n",currentApplication->AppName());
+
+                if ( 0 == strcmp(currentApplication->AppName(),"BLE pairing")) {
+                    if ( ttgo->bl->isOn()) {
+                        LaunchWatchface();
+                    }
+                }
+            }
+        }
+        /**
+         * @brief Callback to verify PIN confirmation during secure BLE pairing
+         * @param pin The PIN provided by the remote device to confirm
+         * @return true if PIN matches the expected passkey, false otherwise
+         * 
+         * Validates that the PIN from the remote device matches the local passkey.
+         * Used for numeric comparison confirmation during pairing.
+         */
+        void onConfirmPassKey(NimBLEConnInfo& connInfo, uint32_t pin) {
+            uint32_t pass = BLEDevice::getSecurityPasskey();
+            lNetLog("BLE: %p LBLEServerCallbacks: PIN confirmation: %04u PIN from client: %04u\n", bleHandler, this, pass, pin);
+
+            if ( pin == BLEDevice::getSecurityPasskey() ) {
+                lLog("OK\n");
+                BLEDevice::injectConfirmPasskey(connInfo, true);
+            }
+            lLog("FAIL\n");
+            BLEDevice::injectConfirmPasskey(connInfo, false);
+        }
+
+        void onConnParamsUpdate(NimBLEConnInfo& connInfo) {
+            // print connection info
+            lNetLog("BLE: ConnInfo addr:%s id:%s handle:%u interval:%u timeout:%u latency:%u mtu:%u role:%s bonded:%d enc:%d auth:%d keySize:%u\n",
+                    connInfo.getAddress().toString().c_str(),
+                    connInfo.getIdAddress().toString().c_str(),
+                    (unsigned)connInfo.getConnHandle(),
+                    (unsigned)connInfo.getConnInterval(),
+                    (unsigned)connInfo.getConnTimeout(),
+                    (unsigned)connInfo.getConnLatency(),
+                    (unsigned)connInfo.getMTU(),
+                    (connInfo.isMaster() ? "master" : "slave"),
+                    (int)connInfo.isBonded(),
+                    (int)connInfo.isEncrypted(),
+                    (int)connInfo.isAuthenticated(),
+                    (unsigned)connInfo.getSecKeySize());
+        }
+
+        void onIdentity(NimBLEConnInfo& connInfo) {
+            lNetLog("BLE: onIdentity ConnInfo addr:%s id:%s handle:%u interval:%u timeout:%u latency:%u mtu:%u role:%s bonded:%d enc:%d auth:%d keySize:%u\n",
+                    connInfo.getAddress().toString().c_str(),
+                    connInfo.getIdAddress().toString().c_str(),
+                    (unsigned)connInfo.getConnHandle(),
+                    (unsigned)connInfo.getConnInterval(),
+                    (unsigned)connInfo.getConnTimeout(),
+                    (unsigned)connInfo.getConnLatency(),
+                    (unsigned)connInfo.getMTU(),
+                    (connInfo.isMaster() ? "master" : "slave"),
+                    (int)connInfo.isBonded(),
+                    (int)connInfo.isEncrypted(),
+                    (int)connInfo.isAuthenticated(),
+                    (unsigned)connInfo.getSecKeySize());
+        }
+};
+
+// advertiser callbacks
+class LBLEAdvertisedDeviceCallbacks: public BLEAdvertisedDeviceCallbacks {
+    /**
+     * @brief Callback triggered when a BLE advertisement is discovered during scanning
+     * @param advertisedDevice Pointer to the discovered BLE device
+     * 
+     * Processes discovered BLE devices:
+     * - Checks if device is already known
+     * - Updates device metrics (RSSI, TX power, distance)
+     * - Adds new devices to the known device list
+     * - Updates location zone information
+     * - Stores device data in the database
+     */
+    void onResult(const NimBLEAdvertisedDevice* advertisedDevice) override {
+        bool alreadyKnown   = false;
+        int FinalZone       = -1;
+
+        if( xSemaphoreTake( BLEKnowDevicesSemaphore, LUNOKIOT_EVENT_FAST_TIME_TICKS) == pdTRUE )  {
+            for (auto const& dev : BLEKnowDevices) {
+                if ( dev->addr == advertisedDevice->getAddress() ) {
+                    char *finalName = (char*)"";
+                    if ( nullptr != dev->devName ) { finalName = dev->devName; }
+                    lNetLog("BLE: Know dev: '%s'(%s) (from: %d secs) last seen: %d secs (%d times) zone: %d\n",
+                                            finalName,dev->addr.toString().c_str(),
+                                            ((millis()-dev->firstSeen)/1000),
+                                            ((millis()-dev->lastSeen)/1000),
+                                            dev->seenCount,dev->locationGroup);
+
+                    dev->lastSeen   = millis();
+                    dev->seenCount++;
+                    dev->rssi       = advertisedDevice->getRSSI();
+                    dev->txPower    = advertisedDevice->getTXPower();
+                    dev->distance   = 10 ^ ((dev->txPower - dev->rssi) / (10 * 2));
+                    
+                    // https://stackoverflow.com/questions/20416218/understanding-ibeacon-distancing/20434019#20434019
+                    // if (( advertisedDevice->getRSSI()) && (advertisedDevice->haveTXPower())) {
+                    //     // Distance = 10 ^ ((Measured Power -RSSI)/(10 * N))
+                    //     dev->distance = 10 ^((dev->txPower-dev->rssi)/(10* 2));
+                    //     //lNetLog("BLE: DEBUG Device DISTANCE: %f\n",dev->distance);
+                    // }
+                    
+                    if ( BLEZoneLocations::UNKNOWN != dev->locationGroup ) {
+                        FinalZone = dev->locationGroup;
+                    }
+                    alreadyKnown=true;
+                    SqlUpdateBluetoothDevice(dev->addr.toString().c_str(),dev->distance,dev->locationGroup);
+                    break;
+                }
+            }
+            xSemaphoreGive( BLEKnowDevicesSemaphore );
+        }
+
+        if ( alreadyKnown ) {
+            if ( -1 == FinalZone ) { // not found
+                //lNetLog("BLE zone not found\n");
+                BLELocationZone = BLEZoneLocations::UNKNOWN;
+            } else { // found zone
+                //lNetLog("BLE zone found: %d '%s'\n",FinalZone,BLEZoneLocationsHumanReadable[FinalZone]);
+                BLELocationZone = (BLEZoneLocations)FinalZone;
+            }
+            return;
+        } // nu device
+        lBLEDevice * newDev = new lBLEDevice();
+        newDev->addr =  advertisedDevice->getAddress();
+        // Limit device name length to BLE spec maximum
+        size_t nameLen = advertisedDevice->getName().length() < BLE_DEV_NAME_LEN ? advertisedDevice->getName().length() : BLE_DEV_NAME_LEN;
+        newDev->devName = (char *)ps_malloc(nameLen + 1);
+        
+        snprintf(newDev->devName, nameLen + 1, "%s", advertisedDevice->getName().c_str());
+        lNetLog("BLE: New dev: '%s'(%s)\n",newDev->devName, newDev->addr.toString().c_str());
+        
+        newDev->rssi = advertisedDevice->getRSSI();
+        newDev->txPower = advertisedDevice->getTXPower();
+        // https://stackoverflow.com/questions/20416218/understanding-ibeacon-distancing/20434019#20434019
+        newDev->distance = 10 ^((newDev->txPower - newDev->rssi)/(10* 2));
+        
+        newDev->locationGroup=BLEZoneLocations::UNKNOWN;
+        newDev->firstSeen = millis();
+        newDev->lastSeen = newDev->firstSeen;
+        if( xSemaphoreTake( BLEKnowDevicesSemaphore, LUNOKIOT_EVENT_FAST_TIME_TICKS) == pdTRUE )  {
+            BLEKnowDevices.push_back(newDev);
+            //DONT NEEDED (see BLEDev destroy) SqlAddBluetoothDevice(newDev->addr.toString().c_str(), newDev->distance, newDev->locationGroup);
+            xSemaphoreGive( BLEKnowDevicesSemaphore );
+        }
+        //lNetLog("BLE: seen devices: %d\n",BLEKnowDevices.size());
+    }
+    /**
+     * @brief Callback triggered when a BLE advertisement is discovered during scanning
+     * @param advertisedDevice Pointer to the discovered BLE device
+     * 
+     * This function is deprecated and redirects to onResult().
+     */
+    void onDiscoveredDevice(const BLEAdvertisedDevice* advertisedDevice) {
+        onResult(advertisedDevice);
+    }
+
+    /**
+     * @brief Called when a scan operation ends.
+     * @param [in] scanResults The results of the scan that ended.
+     * @param [in] reason The reason code for why the scan ended.
+     */
+    void onScanEnd(const NimBLEScanResults& scanResults, int reason) {
+        lNetLog("BLE: Scan complete, %d devices found, reason: %d\n",scanResults.getCount(),reason);
     }
 };
 
@@ -533,33 +694,36 @@ void LoTBLE::_BLELoopTask() {
     lNetLog("BLE: %p generated PIN: %06d\n",this,generatedPin);
     BLEDevice::setSecurityPasskey(generatedPin);
     NimBLEDevice::setSecurityIOCap(BLE_HS_IO_DISPLAY_ONLY);
-    NimBLEDevice::setPower(defaultBLEPowerLevel,ESP_BLE_PWR_TYPE_DEFAULT);
-    NimBLEDevice::setPower(ESP_PWR_LVL_P9,ESP_BLE_PWR_TYPE_ADV);
-    NimBLEDevice::setPower(ESP_PWR_LVL_P9,ESP_BLE_PWR_TYPE_SCAN);
+    NimBLEDevice::setPower(defaultBLEPowerLevel, NimBLETxPowerType::Connection);
+    NimBLEDevice::setPower(ESP_PWR_LVL_P9,       NimBLETxPowerType::Advertise);
+    NimBLEDevice::setPower(ESP_PWR_LVL_P9,       NimBLETxPowerType::Scan);
+    
     // create GATT the server
     BLEServer *pServer = BLEDevice::createServer();
-    pServer->setCallbacks(new LBLEServerCallbacks(this),true); // destroy on finish
+    pServer->setCallbacks(new LBLEServerCallbacks(this), true);
     lNetLog("BLE: %p Server started\n",this);
 
-    if ( nullptr == pServiceUART ) { pServiceUART = pServer->createService(SERVICE_UART_UUID); }
+    if ( nullptr == pServiceUART ) {
+        pServiceUART = pServer->createService(NimBLEUUID(SERVICE_UART_UUID));
+    }
 
     // Create the BLE Service UART
     // UART data come here
     if ( nullptr == pTxCharacteristic ) { 
-        pTxCharacteristic = pServiceUART->createCharacteristic( CHARACTERISTIC_UUID_TX, NIMBLE_PROPERTY::NOTIFY );
+        pTxCharacteristic = pServiceUART->createCharacteristic( NimBLEUUID(CHARACTERISTIC_UUID_TX), NIMBLE_PROPERTY::NOTIFY );
         pTxCharacteristic->setCallbacks(new LBLEUARTCallbacks());
     }
     if ( nullptr == pRxCharacteristic ) { 
         pRxCharacteristic = pServiceUART->createCharacteristic(
-                    CHARACTERISTIC_UUID_RX,NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::WRITE_ENC | NIMBLE_PROPERTY::WRITE_AUTHEN);
+                    NimBLEUUID(CHARACTERISTIC_UUID_RX),NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::WRITE_ENC | NIMBLE_PROPERTY::WRITE_AUTHEN);
         pRxCharacteristic->setCallbacks(new LBLEUARTCallbacks());
     }
     pServiceUART->start();
 
-    // battery services
+    // Battery service
     // https://circuitdigest.com/microcontroller-projects/esp32-ble-server-how-to-use-gatt-services-for-battery-level-indication
-    pServiceBattery = pServer->createService(BLE_SERVICE_BATTERY);
-    BatteryCharacteristic = pServiceBattery->createCharacteristic(BLE_CHARACTERISTIC_BATTERY,
+    pServiceBattery = pServer->createService(NimBLEUUID((uint16_t)BLE_SERVICE_BATTERY));
+    BatteryCharacteristic = pServiceBattery->createCharacteristic(NimBLEUUID((uint16_t)BLE_CHARACTERISTIC_BATTERY),
                             NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::READ_ENC | NIMBLE_PROPERTY::READ_AUTHEN | NIMBLE_PROPERTY::NOTIFY );
     uint8_t level = 0;
     if ( -1 != batteryPercent ) { level = batteryPercent; }
@@ -577,13 +741,11 @@ void LoTBLE::_BLELoopTask() {
         },PMU_EVENT_BATT_PC);
     }
     pServiceBattery->start();
-    
+
     pServer->start();
 
     BLEScan * pBLEScan = BLEDevice::getScan();
-    pBLEScan->setAdvertisedDeviceCallbacks(new LBLEAdvertisedDeviceCallbacks(), false);
-
-
+    pBLEScan->setScanCallbacks(new LBLEScanCallbacks(), false);
 
     StartAdvertising();
     unsigned long nextUserSettingCheckMS=0;
@@ -646,7 +808,7 @@ void LoTBLE::_BLELoopTask() {
             pBLEScan->setWindow(999);  // less or equal setInterval value
             pBLEScan->setDuplicateFilter(true);
             //delay(50);
-            BLEScanResults foundDevices = pBLEScan->start(2);
+            BLEScanResults foundDevices = pBLEScan->getResults(2 * 1000);
             lNetLog("BLE: Devices found: %d\n",foundDevices.getCount());
             //pBLEScan->clearResults();   // delete results fromBLEScan buffer to release memory
             lNetLog("BLE: Refreshing devices from database...\n");
@@ -1112,6 +1274,7 @@ bool LoTBLE::StartScan(uint8_t duration, bool activeScan) {
     
     // Get the NimBLE scan instance
     pBLEScan_ = NimBLEDevice::getScan();
+
     if (pBLEScan_ == nullptr) {
         lNetLog("BLE: %p Failed to get scan instance\n", this);
         xSemaphoreGive(scanLock_);
@@ -1126,8 +1289,8 @@ bool LoTBLE::StartScan(uint8_t duration, bool activeScan) {
     scanComplete_ = false;
     
     lNetLog("BLE: %p Starting scan for %d seconds\n", this, duration);
-    scanResults_ = pBLEScan_->start(duration);      // Non-blocking scan
-    //scanResults_ = pBLEScan_->getResults();
+    scanResults_ = pBLEScan_->getResults(duration * 1000, false);
+    
     scanComplete_ = true;
     
     xSemaphoreGive(scanLock_);
@@ -1323,7 +1486,7 @@ static void BLEStartTask(void* args) {
     }
 
     BLEScan * pBLEScan = BLEDevice::getScan();
-    pBLEScan->setAdvertisedDeviceCallbacks(new LBLEAdvertisedDeviceCallbacks(), true);
+    pBLEScan->setScanCallbacks(new LBLEAdvertisedDeviceCallbacks(), true);
     pBLEScan->setActiveScan(false); //active scan uses more power
     pBLEScan->setInterval(300);
     pBLEScan->setWindow(299);  // less or equal setInterval value

@@ -44,19 +44,20 @@ BLEDeviceMonitorApplication::~BLEDeviceMonitorApplication() {
     }
 }
 
-BLEDeviceMonitorApplication::BLEDeviceMonitorApplication(uint16_t baseColor,char *devMAC):backgroundColor(baseColor),deviceMAC(devMAC) {
+BLEDeviceMonitorApplication::BLEDeviceMonitorApplication(uint16_t baseColor, char *devMAC):backgroundColor(baseColor), deviceMAC(devMAC) {
     // reconfigure back button from template to do other things instead back to watchface
     TemplateApplication::btnBack->tapActivityCallback = [](void *payload) { LaunchApplication(new BLEMonitorApplication()); };
     TemplateApplication::btnBack->xbmColor=TFT_WHITE; // change the color
     TemplateApplication::btnBack->InternalRedraw(); // must redraw the widget
-    NimBLEAddress addToinspect = NimBLEAddress(std::string(deviceMAC));
+    NimBLEAddress addToinspect = NimBLEAddress(std::string(deviceMAC), BLE_ADDR_PUBLIC);
+
     if( xSemaphoreTake( BLEKnowDevicesSemaphore, LUNOKIOT_EVENT_DONTCARE_TIME_TICKS) == pdTRUE )  {
         lBLEDevice * BTDeviceSelected = nullptr;
         bool found=false;
         for (auto const& dev : BLEKnowDevices) {
             esp_task_wdt_reset();
             if ( addToinspect == dev->addr ) {
-                BTDeviceSelected=dev;
+                BTDeviceSelected = dev;
                 break;
             }
         }

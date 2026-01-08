@@ -28,14 +28,16 @@
 
 // convenient debug from espressif
 #ifdef LUNOKIOT_DEBUG_ESP32
-#ifdef CORE_DEBUG_LEVEL
-#undef CORE_DEBUG_LEVEL
-#endif
-#ifdef LOG_LOCAL_LEVEL
-#undef LOG_LOCAL_LEVEL
-#endif
-#define CORE_DEBUG_LEVEL 0
-#define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
+    #ifdef CORE_DEBUG_LEVEL
+        #undef CORE_DEBUG_LEVEL
+    #endif
+
+    #ifdef LOG_LOCAL_LEVEL
+        #undef LOG_LOCAL_LEVEL
+    #endif
+
+    #define CORE_DEBUG_LEVEL 0
+    #define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
 #endif
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>     // vTaskDelete

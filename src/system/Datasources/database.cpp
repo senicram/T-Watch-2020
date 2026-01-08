@@ -310,7 +310,7 @@ static int BLESqlGetDeviceCallback(void *data, int argc, char **argv, char **azC
     }
     if ( nullptr == address ) { return 0; }
 
-    NimBLEAddress bleAddress = NimBLEAddress(address);
+    NimBLEAddress shitBLE = NimBLEAddress(address, BLE_ADDR_PUBLIC);
     //if( xSemaphoreTake( BLEKnowDevicesSemaphore, LUNOKIOT_EVENT_IMPORTANT_TIME_TICKS) == pdTRUE )  {
         for (auto const& dev : BLEKnowDevices) {
             if ( dev->addr == bleAddress ) {
@@ -408,15 +408,16 @@ void SqlJSONLog(const char * from, const char * logLine) {
 */
 void SqlLog(const char * logLine) {
     if ( nullptr == systemDatabase ) { return; }
-    const char fmtStr[]="INSERT INTO rawlogSession VALUES (NULL,CURRENT_TIMESTAMP,'%s');";
-    size_t totalsz = strlen(fmtStr)+strlen(logLine)+1;
-    char * query=(char*)ps_malloc(totalsz);
+
+    const char fmtStr[] = "INSERT INTO rawlogSession VALUES (NULL,CURRENT_TIMESTAMP,'%s');";
+    size_t totalsz = strlen(fmtStr) + strlen(logLine) + 1;
+    char * query = (char*)ps_malloc(totalsz);
     if ( nullptr == query ) {
         lSysLog("SQL: Unable to allocate: %u bytes\n", totalsz);
         return;
     }
     //lSysLog("SQL: Query alloc size: %u\n", totalsz);
-    sprintf(query,fmtStr,logLine);
+    sprintf(query, fmtStr, logLine);
     systemDatabase->SendSQL(query);
     free(query);
 }

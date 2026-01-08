@@ -62,17 +62,17 @@ extern const PROGMEM uint8_t githubPEM_end[] asm("_binary_asset_raw_githubuserco
 #endif
 
 //int OTAbytesPerSecond=0;
-#define OTASTEP_IDLE -1
-#define OTASTEP_NO_WIFI 0
-#define OTASTEP_ALREADYUPDATED 1
-#define OTASTEP_CONNECTING 2
-#define OTASTEP_ONLINE 3
-#define OTASTEP_CHECKING 4
-#define OTASTEP_HTTPS_ERROR 5 
-#define OTASTEP_IMAGE_ERROR 6 
-#define OTASTEP_IMAGE_DOWNLOAD 7 
+#define OTASTEP_IDLE                 -1
+#define OTASTEP_NO_WIFI              0
+#define OTASTEP_ALREADYUPDATED       1
+#define OTASTEP_CONNECTING           2
+#define OTASTEP_ONLINE               3
+#define OTASTEP_CHECKING             4
+#define OTASTEP_HTTPS_ERROR          5 
+#define OTASTEP_IMAGE_ERROR          6 
+#define OTASTEP_IMAGE_DOWNLOAD       7 
 #define OTASTEP_IMAGE_DOWNLOAD_ERROR 8 
-#define OTASTEP_IMAGE_DOWNLOAD_DONE 9
+#define OTASTEP_IMAGE_DOWNLOAD_DONE  9
 
 int8_t OTAStep = OTASTEP_IDLE;
 
@@ -195,7 +195,7 @@ OTAUpdateApplication::OTAUpdateApplication() {
         lAppLog("OTA: Using local URL for updates\n");
         //sprintf(firmwareURL,"%s/ota/lunokWatch_%s_%s.bin",LocalOTAURL,latestBuildFoundString,myDeviceName);
 
-        sprintf(firmwareURL,"%s/ota/lunokWatch_%s_%s.bin",LUNOKIOT_UPDATE_LOCAL_URL_STRING,latestBuildFoundString,myDeviceName);
+        sprintf(firmwareURL,"%s/ota/lunokWatch_%s_%s.bin", LUNOKIOT_UPDATE_LOCAL_URL_STRING, latestBuildFoundString, myDeviceName);
         #else
         sprintf(firmwareURL,"https://raw.githubusercontent.com/lunokjod/watch/devel/ota/lunokWatch_%s_%s.bin",latestBuildFoundString,myDeviceName);
         #endif

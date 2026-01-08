@@ -41,24 +41,25 @@ Modifications Copyright (C) 2025 Marcin Cz
 | Dependency | Current | Latest | Status | V3 Safe |
 |---|---|---|---|---|
 | espressif32 Platform | 6.3.0 | 6.3.0 | ✅ Latest | ⚠️ Testing ongoing |
-| NimBLE-Arduino | 1.4.3 | 1.4.3 | ✅ Latest | ✅ |
-| ArduinoNvs | 2.10.0 | 2.10.0 | ✅ Latest | ✅ |
+| NimBLE-Arduino | 2.3.7 | 2.3.7 | ✅ Latest | ✅ |
+| ArduinoNvs | 2.5.0 | 2.10.0 | ⚠️ Needs update | ✅ |
 | QRCode | 0.0.1 | 0.0.1 | ✅ Latest | ✅ |
-| Arduino_JSON | 0.1.0 | 0.1.0 | ✅ Latest | ✅ |
-| ESP8266Audio | 1.9.9 | 1.9.9 | ✅ Latest | ✅ |
-| TTGO TWatch Library | 1.4.2 | Latest | ✅ Current | ✅ Optimized |
-| Ticker | 2.0.0 | 2.0.0 | ✅ Latest | ✅ |
-| LittleFS | 2.0.0 | 2.0.0 | ✅ Latest | ✅ |
-| FS | 2.0.0 | 2.0.0 | ✅ Latest | ✅ |
-| HTTPClient | 2.0.0 | 2.0.0 | ✅ Latest | ✅ |
-| SPI | 2.0.0 | 2.0.0 | ✅ Latest | ✅ |
-| WiFi | 2.0.0 | 2.0.0 | ✅ Latest | ✅ |
-| WiFiProv | 2.0.0 | 2.0.0 | ✅ Latest | ✅ |
-| ESP32 BLE Arduino | 2.0.0 | 2.0.0 | ✅ Latest | ✅ |
-| Sqlite3Esp32 | 2.5.0 | Latest | ✅ Current | ✅ |
-| miniz | 0.0.1 | Latest | ✅ Current | ✅ |
-| Arduino-Lua | 0.1.0 | Latest | ✅ Current | ✅ |
-| BLE_HID_Client | Latest Git | Latest | ✅ Latest | ✅ |
+| Arduino_JSON | 0.1.0 | 0.2.0 | ⚠️ Needs update | ✅ |
+| ESP8266Audio | 1.9.7 | 2.4.1 | ⚠️ Needs update | ✅ |
+| TTGO TWatch Library | 1.4.3 Git | 1.4.3 Git | ✅ Current | ✅ Optimized |
+| Ticker | 2.0.0 | 4.4.0 | ⚠️ Needs update | ✅ |
+| LittleFS | 2.0.0 | 2.11.2 | ⚠️ Needs update | ✅ |
+| Arduino-esp32 | 2.0.0 | 3.3.5 | ⚠️ Needs update | |
+| FS | 2.0.0 | 3.3.5 | ⚠️ Needs update, Part of Arduino-esp32|  | 
+| HTTPClient | 2.0.0 | 3.3.5 | ⚠️ Needs update, Part of Arduino-esp32 | ✅ |
+| SPI | 2.0.0 | 3.3.5 | ⚠️ Needs update, Part of Arduino-esp32 | ✅ |
+| WiFi | 2.0.0 | 3.3.5 | ⚠️ Needs update, Part of Arduino-esp32 | ✅ |
+| WiFiProv | 2.0.0 | 3.3.5 | ⚠️ Needs update, Part of Arduino-esp32 | ✅ |
+| ESP32 BLE Arduino | 2.0.0 | 3.3.5 | ⚠️ Needs update, Part of Arduino-esp32 | ✅ |
+| Sqlite3Esp32 | 2.5.0 | 3.3.5 | ⚠️ Needs update, Part of Arduino-esp32 | ✅ |
+| miniz | 3.1.0 Git | 3.1.0 Git | ✅ Current | ✅ |
+| Arduino-Lua | Git Latest| Git Latest | ✅ Current | ✅ |
+| BLE_HID_Client | Latest Git | Latest Git | ✅ Latest | ✅ |
 
 **Legend:**
 - ⬜ Not Tested - Test not yet performed

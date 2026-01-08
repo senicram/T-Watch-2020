@@ -23,6 +23,8 @@
 // https://computingforgeeks.com/connect-to-bluetooth-device-from-linux-terminal/
 #include <NimBLEDevice.h>
 #include "../Datasources/kvo.hpp"
+#include <list>
+
 /*
     Video: https://www.youtube.com/watch?v=oCMOYS71NIU
     Based on Neil Kolban example for IDF: https://github.com/nkolban/esp32-snippets/blob/master/cpp_utils/tests/BLE%20Tests/SampleNotify.cpp
@@ -60,10 +62,13 @@
 #define BLE_CHARACTERISTIC_LUNOKIOT_BATTERY_TEMP "4b3cce41-1d16-49f8-a8e3-04adfe41c745"
 #define BLE_CHARACTERISTIC_LUNOKIOT_BMA_TEMP     "2c35cafc-6220-438c-82fc-ae131d532d12"
 
-#define BLE_SERVICE_BATTERY                      "180F"
-#define BLE_CHARACTERISTIC_BATTERY               "2A19"
-#define BLE_DESCRIPTOR_HUMAN_DESC                "2901"
-#define BLE_DESCRIPTOR_TYPE                      "2904"
+#define BLE_SERVICE_BATTERY                      0x180F
+#define BLE_CHARACTERISTIC_BATTERY               0x2A19
+#define BLE_DESCRIPTOR_HUMAN_DESC                0x2901
+#define BLE_DESCRIPTOR_TYPE                      0x2904
+
+#define BLE_CURRENT_TIME_SERVICE                 0x1805
+#define BLE_CURRENT_TIME_CHARACTERISTIC          0x2A2B
 
 #define BLE_SERVICE_LUNOKIOT                     "ab84d0b6-4cd2-4f4e-ae59-9a81203205f7"
 #define SERVICE_UART_UUID                        "6E400001-B5A3-F393-E0A9-E50E24DCCA9E" // UART service UUID
@@ -99,13 +104,9 @@ class lBLEDevice {
 };
 
 extern std::list <lBLEDevice*>BLEKnowDevices;
-
 extern const char * BLEZoneLocationsHumanReadable[];
-
 extern BLEZoneLocations BLELocationZone;
-
 extern SemaphoreHandle_t BLEKnowDevicesSemaphore;
-extern std::list <lBLEDevice*>BLEKnowDevices;
 
 //extern volatile bool bleWaitStop; // internal flag to wait BLEStop task
 //extern bool bleEnabled; // is the service on?
@@ -114,6 +115,7 @@ extern std::list <lBLEDevice*>BLEKnowDevices;
 
 class LBLEUARTCallbacks;
 class LBLEServerCallbacks;
+class LBLEScanCallbacks;
 
 /**
  * @brief Represents an active BLE client connection to a remote device
@@ -135,6 +137,8 @@ struct BLEClientConnection {
 class LoTBLE {
     friend LBLEUARTCallbacks;
     friend LBLEServerCallbacks;
+    friend LBLEScanCallbacks;
+
     private:
         // Type                              Name                           Value
         const float                         GraceTimeSeconds               = 9;
@@ -157,6 +161,7 @@ class LoTBLE {
         EventKVO *                          battPercentPublish             = nullptr;
         BLEService *                        pServiceBattery                = nullptr;
         NimBLECharacteristic *              BatteryCharacteristic          = nullptr;
+
         // gadgetbridge integration
         // used to nofity when new message is ready for parsing
         bool                                BLEGadgetbridgeCommandPending  = false;
