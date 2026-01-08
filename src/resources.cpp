@@ -93,11 +93,7 @@
 #include "../static/img_pause_48.xbm"
 
 #include "../static/img_xbm_32.xbm"
-
 #include "../static/img_house_32.c"
-
-#include "../static/img_landscape_200.c"
-
 #include "../tool/BackButton.c"
 
 

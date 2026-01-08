@@ -162,7 +162,12 @@ LuIRotateApplication::LuIRotateApplication() {
     // add smartwatch image to ilustrate the orientation
     Container * innerdiv = new Container(LuI_Horizontal_Layout,2);
     innerdiv->AddChild(new Text("This side up",TFT_WHITE,false,1,&FreeMonoBold12pt7b),0.6);
-    innerdiv->AddChild(new Image(img_landscape_200.width,img_landscape_200.height,img_landscape_200.pixel_data,true),1.4);
+    // use a lightweight rectangle control instead of a heavy Image
+    Control *rect = new Control(180, 100);
+    // fill the child's canvas with a themed background (acts as a simple rectangle)
+    TFT_eSprite *rcs = rect->GetCanvas();
+    rcs->fillSprite(ThCol(background_alt));
+    innerdiv->AddChild(rect,1.4);
     viewContainer->AddChild(innerdiv);
 
     ScreenRotateEvent = new EventKVO([&, this](){

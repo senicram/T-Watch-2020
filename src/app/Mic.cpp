@@ -36,7 +36,7 @@ extern TTGOClass *ttgo;
 #define MIC_DATA            2
 #define MIC_CLOCK           0
 
-uint8_t buffer[BUFFER_SIZE] = {0};
+uint8_t *buffer = nullptr;
 
 float               val_avg = 0;
 float               val_avg_1 = 0;
@@ -55,7 +55,7 @@ uint32_t            j = 0;
 void MicApplication::_RecordThread(void *args) {
     lLog("Mic thread start\n");
     MicApplication * self = (MicApplication *)args;
-    self->recThread=true;
+    self->recThread = true;
     self->recThreadDead = false;
     i2s_config_t i2s_config;
     i2s_pin_config_t i2s_cfg;
@@ -153,6 +153,20 @@ MicApplication::MicApplication() {
     canvas->fillSprite(ThCol(background)); // use theme colors
     audioWaveGraph->DrawTo(canvas,40,40);
     btnBack->DrawTo(canvas); // draw backbutton from TemplateApplication
+
+    // allocate sample buffer on the heap to avoid large static allocation
+    if ( nullptr == buffer ) {
+        buffer = (uint8_t*)ps_malloc(BUFFER_SIZE);
+        if ( nullptr == buffer ) {
+            lLog("Mic: ERROR: Unable to allocate buffer of %d bytes\n", BUFFER_SIZE);
+            i2s_driver_uninstall(I2S_NUM_0);
+            recThread = false;
+            recThreadDead = true;
+            vTaskDelete(NULL);
+            return;
+        }
+        memset(buffer, 0, BUFFER_SIZE);
+    }
 }
 
 MicApplication::~MicApplication() {
@@ -165,6 +179,11 @@ MicApplication::~MicApplication() {
     }
     delete audioWaveGraph;
     lAppLog("Mic: says goodbye!!!\n");
+
+    if ( nullptr != buffer ) {
+        free(buffer);
+        buffer = nullptr;
+    }
 }
 
 bool MicApplication::Tick() {

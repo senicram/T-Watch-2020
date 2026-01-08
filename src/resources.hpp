@@ -291,7 +291,6 @@ extern const GimpImage img_wirecolor;
 extern const GimpImage img_flatcolor_18;
 extern const GimpImage img_fullrender_18;
 extern const GimpImage img_wirecolor_18;
-extern const GimpImage img_landscape_200;
 extern const GimpImage img_house_32;
 extern const GimpImage img_icon_telegram_48;
 extern const GimpImage img_icon_mail_48;

@@ -1,5 +1,6 @@
 /* GIMP RGB C-Source image dump (img_weather_800.c) */
 #include "resources.hpp"
+// @todo: conmpress this image
 const GimpImage img_weather_800 = {
   40, 40, 2,
   (const unsigned char *)"\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"

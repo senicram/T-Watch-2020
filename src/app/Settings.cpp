@@ -111,10 +111,10 @@ SettingsApplication::SettingsApplication() {
     }
     openweatherCheck->InternalRedraw();
 
-    bleCheck=new SwitchWidget(115,120,[&,this](IGNORE_PARAM){
+    bleCheck = new SwitchWidget(115,120,[&,this](IGNORE_PARAM){
         ntpBLECheck->SetEnabled(bleCheck->switchEnabled);
         if ( false == bleCheck->switchEnabled ) {
-            ntpBLECheck->switchEnabled=false;
+            ntpBLECheck->switchEnabled = false;
             LoT().GetBLE()->Disable();
         } else {
             LoT().GetBLE()->Enable();
@@ -124,8 +124,8 @@ SettingsApplication::SettingsApplication() {
     bleCheck->switchEnabled=(bool)LoT().GetSettings()->GetInt(SystemSettings::SettingKey::BLE);
     bleCheck->InternalRedraw();
 
-    ntpBLECheck=new SwitchWidget(20,160);
-    ntpBLECheck->switchEnabled= (bleCheck->switchEnabled?(bool)LoT().GetSettings()->GetInt(SystemSettings::SettingKey::NTPBLE):false);
+    ntpBLECheck = new SwitchWidget(20,160);
+    ntpBLECheck->switchEnabled = (bleCheck->switchEnabled ? (bool)LoT().GetSettings()->GetInt(SystemSettings::SettingKey::NTPBLE) : false);
     ntpBLECheck->SetEnabled(bleCheck->switchEnabled);
     ntpBLECheck->InternalRedraw();
 
